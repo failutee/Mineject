@@ -16,6 +16,12 @@ dependencies {
     implementation("com.google.guava:guava:33.1.0-jre")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }
