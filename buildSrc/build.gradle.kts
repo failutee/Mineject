@@ -12,15 +12,17 @@ allprojects {
     group = "xyz.failutee.mineject"
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = project.name
+subprojects {
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                artifactId = project.name
 
-            groupId = project.group.toString()
-            version = project.version.toString()
+                groupId = project.group.toString()
+                version = project.version.toString()
 
-            from(components["java"])
+                from(components["java"])
+            }
         }
     }
 }
