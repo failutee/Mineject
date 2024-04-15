@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("java")
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("maven-publish")
 }
 
 group = "Mineject-Core"
@@ -25,6 +26,18 @@ tasks.withType<ShadowJar> {
 
 artifacts {
     add("archives", tasks.getByName<ShadowJar>("shadowJar"))
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "com.github.failutee"
+                artifactId = "mineject"
+                version = "0.0.0-PRE"
+            }
+        }
+    }
 }
 
 tasks.test {
