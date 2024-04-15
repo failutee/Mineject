@@ -1,6 +1,8 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id("java")
-    `maven-publish`
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "Mineject-Core"
@@ -16,10 +18,13 @@ dependencies {
     implementation("com.google.guava:guava:33.1.0-jre")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
+tasks.withType<ShadowJar> {
+    mergeServiceFiles()
+    minimize()
+}
+
+artifacts {
+    add("archives", tasks.getByName<ShadowJar>("shadowJar"))
 }
 
 tasks.test {
