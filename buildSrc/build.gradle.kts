@@ -1,10 +1,11 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    `kotlin-dsl`
     id("maven-publish")
 }
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 allprojects {
@@ -16,10 +17,9 @@ subprojects {
     publishing {
         publications {
             create<MavenPublication>("maven") {
-                artifactId = project.name
+                artifactId = "${project.name}-${project.version.toString()}"
 
                 groupId = project.group.toString()
-                version = project.version.toString()
 
                 from(components["java"])
             }
