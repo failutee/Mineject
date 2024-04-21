@@ -3,7 +3,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "Mineject-Unit"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
