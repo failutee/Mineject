@@ -1,6 +1,5 @@
 plugins {
-    id("java")
-    id("maven-publish")
+    java
 }
 
 version = "1.0.0"
