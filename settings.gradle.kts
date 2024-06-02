@@ -3,4 +3,4 @@ plugins {
 }
 rootProject.name = "Mineject"
 include("mineject-core")
-include("mineject-unit")
+include("mineject-spigot")

@@ -1,11 +1,12 @@
 package xyz.failutee.mineject.dependency;
 
-import xyz.failutee.mineject.annotation.BeanSetup;
 import xyz.failutee.mineject.annotation.Component;
 import xyz.failutee.mineject.annotation.Injectable;
 import xyz.failutee.mineject.bean.BeanManager;
 import xyz.failutee.mineject.bean.BeanSetupRegistry;
 import xyz.failutee.mineject.exception.DependencyException;
+import xyz.failutee.mineject.platform.InjectionPlatform;
+import xyz.failutee.mineject.processor.ClassProcessorManager;
 import xyz.failutee.mineject.util.AnnotationUtil;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
@@ -18,17 +19,20 @@ public class DependencyResolver {
     private final BeanSetupRegistry beanSetupRegistry;
     private final DependencyProvider dependencyProvider;
     private final Collection<Class<?>> classes;
+    private final InjectionPlatform platform;
 
     public DependencyResolver(
         BeanManager beanManager,
         BeanSetupRegistry beanSetupRegistry,
         DependencyProvider dependencyProvider,
-        Collection<Class<?>> classes
+        Collection<Class<?>> classes,
+        InjectionPlatform platform
     ) {
         this.beanManager = beanManager;
         this.beanSetupRegistry = beanSetupRegistry;
         this.dependencyProvider = dependencyProvider;
         this.classes = classes;
+        this.platform = platform;
     }
 
     public void processBeans() {
@@ -37,6 +41,20 @@ public class DependencyResolver {
             Object instance = this.invokeBeanMethod(method);
 
             this.beanManager.registerBean(instance.getClass(), instance);
+
+        }
+    }
+
+    public void processPlatform() {
+        ClassProcessorManager classProcessorManager = this.platform.getClassProcessorManager();
+
+        for (Class<?> clazz : this.classes) {
+
+            classProcessorManager.getClassProcessor(clazz).ifPresent(processor -> {
+                Object instance = this.getOrCreateBean(clazz);
+
+                processor.processClass(instance);
+            });
 
         }
     }
@@ -62,23 +80,9 @@ public class DependencyResolver {
     @SuppressWarnings("unchecked")
     private <T> T invokeBeanMethod(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
-        Object[] args = this.getArguments(method);
+        Object[] args = this.resolveArguments(method);
 
-        Object instance;
-
-        var declaringClassInstance = this.beanSetupRegistry.searchBeanInstance(declaringClass);
-
-        if (declaringClassInstance.isPresent()) {
-            instance = declaringClassInstance.get();
-        }
-        else {
-            if (this.beanManager.containsBean(declaringClass)) {
-                instance = this.dependencyProvider.getDependency(declaringClass);
-            }
-            else instance = this.createInstance(declaringClass);
-
-            this.beanSetupRegistry.registerBeanType(instance);
-        }
+        Object instance = this.getOrCreateBean(declaringClass);
 
         method.setAccessible(true);
 
@@ -90,15 +94,11 @@ public class DependencyResolver {
     }
 
     public <T> T createInstance(Class<T> clazz) {
-        if (!AnnotationUtil.hasAnnotation(clazz, Component.class) && !AnnotationUtil.hasAnnotation(clazz, BeanSetup.class)) {
-            throw new DependencyException("Cannot create an instance of class '%s' because it is not a component.".formatted(clazz.getSimpleName()));
-        }
-
         Constructor<T> constructor = this.findConstructor(clazz, clazz.getDeclaredConstructors());
 
         constructor.setAccessible(true);
 
-        Object[] args = this.getArguments(constructor);
+        Object[] args = this.resolveArguments(constructor);
 
         try {
             return ReflectionUtil.createNewInstance(constructor, args);
@@ -107,7 +107,7 @@ public class DependencyResolver {
         }
     }
 
-    private Object[] getArguments(Executable executable) {
+    private Object[] resolveArguments(Executable executable) {
         Parameter[] parameters = executable.getParameters();
         Object[] args = new Object[parameters.length];
 
@@ -115,20 +115,11 @@ public class DependencyResolver {
 
             Class<?> type = parameters[i].getType();
 
-            Object instance;
-
-            try {
-                instance = this.dependencyProvider.getDependency(type);
-            } catch (DependencyException exception) {
-                instance = this.createInstance(type);
-            }
-
-            args[i] = instance;
+            args[i] = this.getOrCreateBean(type);
         }
 
         return args;
     }
-
 
     @SuppressWarnings("unchecked")
     private <T> Constructor<T> findConstructor(Class<T> clazz, Constructor<?>[] constructors) {
@@ -146,5 +137,18 @@ public class DependencyResolver {
         } catch (Exception exception) {
             throw new DependencyException("Could not find constructor for '%s' class, did you forgot @Injectable?".formatted(clazz.getSimpleName()));
         }
+    }
+
+    private <T> Object getOrCreateBean(Class<? extends T> clazz) {
+        return beanSetupRegistry.searchBeanInstance(clazz).orElseGet(() -> {
+            if (this.beanManager.containsBean(clazz)) {
+                return this.dependencyProvider.getDependency(clazz);
+            }
+
+            Object instance = this.createInstance(clazz);
+            this.beanSetupRegistry.registerBeanType(instance);
+
+            return instance;
+        });
     }
 }
