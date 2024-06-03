@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    `java-library`
 }
 
 group = "xyz.failutee.mineject"
@@ -9,7 +10,6 @@ repositories {
     mavenCentral()
 
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
-    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
@@ -18,6 +18,6 @@ dependencies {
 
     compileOnly(dependencyNotation = "org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
 
-    implementation(project(":mineject-commons"))
     implementation(project(":mineject-core"))
+    api(project(":mineject-commons"))
 }

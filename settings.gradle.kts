@@ -5,3 +5,4 @@ rootProject.name = "Mineject"
 include("mineject-core")
 include("mineject-spigot")
 include("mineject-commons")
+include("mineject-example")

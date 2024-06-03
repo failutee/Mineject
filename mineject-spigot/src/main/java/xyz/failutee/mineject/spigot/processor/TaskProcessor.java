@@ -25,10 +25,10 @@ public class TaskProcessor implements ClassProcessor {
     public void processClass(Object instance) {
         Task task = instance.getClass().getDeclaredAnnotation(Task.class);
 
-        if (!(instance instanceof ScheduledTask<?> scheduledTask) || !BukkitTask.class.isAssignableFrom(scheduledTask.getClass())) {
+        try {
+            this.taskService.runTaskTimer((ScheduledTask<BukkitTask>) instance, task.delay(), task.repeat(), task.async());
+        } catch (ClassCastException exception) {
             throw new DependencyException("Class '%s' does not implement ScheduledTask<BukkitTask>".formatted(instance.getClass().getSimpleName()));
         }
-
-        this.taskService.runTaskTimer((ScheduledTask<BukkitTask>) scheduledTask, task.delay(), task.repeat(), task.async());
     }
 }

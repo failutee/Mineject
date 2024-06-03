@@ -40,7 +40,7 @@ public class DependencyResolver {
 
             Object instance = this.invokeBeanMethod(method);
 
-            this.beanManager.registerBean(instance.getClass(), instance);
+            this.beanManager.registerBean(method.getReturnType(), instance);
 
         }
     }
