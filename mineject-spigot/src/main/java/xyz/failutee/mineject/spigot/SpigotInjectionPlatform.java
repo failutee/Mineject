@@ -2,7 +2,7 @@ package xyz.failutee.mineject.spigot;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-import task.TaskService;
+import xyz.failutee.mineject.commons.task.TaskService;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.processor.ClassProcessorManager;

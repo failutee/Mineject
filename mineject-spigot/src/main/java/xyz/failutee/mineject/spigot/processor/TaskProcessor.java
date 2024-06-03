@@ -1,8 +1,8 @@
 package xyz.failutee.mineject.spigot.processor;
 
 import org.bukkit.scheduler.BukkitTask;
-import task.ScheduledTask;
-import task.TaskService;
+import xyz.failutee.mineject.commons.task.ScheduledTask;
+import xyz.failutee.mineject.commons.task.TaskService;
 import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.processor.ClassProcessor;
 import xyz.failutee.mineject.spigot.annotation.Task;

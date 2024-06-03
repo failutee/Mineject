@@ -3,8 +3,8 @@ package xyz.failutee.mineject.spigot.task;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
-import task.ScheduledTask;
-import task.TaskService;
+import xyz.failutee.mineject.commons.task.ScheduledTask;
+import xyz.failutee.mineject.commons.task.TaskService;
 
 public class BukkitTaskService implements TaskService<BukkitTask> {
 
