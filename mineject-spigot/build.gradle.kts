@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "xyz.failutee.mineject"
-version = "unspecified"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -18,5 +18,6 @@ dependencies {
 
     compileOnly(dependencyNotation = "org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
 
+    implementation(project(":mineject-commons"))
     implementation(project(":mineject-core"))
 }

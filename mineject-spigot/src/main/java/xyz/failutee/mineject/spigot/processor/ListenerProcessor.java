@@ -24,8 +24,6 @@ public class ListenerProcessor implements ClassProcessor {
             return;
         }
 
-        System.out.println("Created even without annotation łot");
-
         PluginManager pluginManager = this.plugin.getServer().getPluginManager();
         pluginManager.registerEvents(listener, this.plugin);
     }
