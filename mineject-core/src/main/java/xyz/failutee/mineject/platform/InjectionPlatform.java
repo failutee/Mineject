@@ -2,7 +2,6 @@ package xyz.failutee.mineject.platform;
 
 import xyz.failutee.mineject.processor.ClassProcessorManager;
 
-@FunctionalInterface
 public interface InjectionPlatform {
 
     InjectionPlatform EMPTY_PLATFORM = new EmptyInjectionPlatform();

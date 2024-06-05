@@ -9,6 +9,7 @@ import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.platform.InjectionPlatformProvider;
+import xyz.failutee.mineject.platform.PlatformContext;
 import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
@@ -60,7 +61,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         this.beanSetupRegistry.collectBeanMethods(classes);
         this.subscriberRegistry.collectMethods(classes);
 
-        InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyProvider);
+        PlatformContext platformContext = PlatformContext.create(this.dependencyProvider, this.eventDispatcher);
+        InjectionPlatform platform = this.platformProvider.getPlatform(platformContext);
 
         var dependencyResolver = new DependencyResolver(this.beanManager, this.beanSetupRegistry, this.dependencyProvider, classes, platform);
 
