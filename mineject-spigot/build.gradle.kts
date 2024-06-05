@@ -1,21 +1,23 @@
 plugins {
     id("java")
-    id("maven-publish")
+    `java-library`
 }
 
+group = "xyz.failutee.mineject"
 version = "1.0.0"
 
 repositories {
     mavenCentral()
+
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
 }
 
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    implementation(project(":mineject-core"))
-}
+    compileOnly(dependencyNotation = "org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
 
-tasks.test {
-    useJUnitPlatform()
+    implementation(project(":mineject-core"))
+    api(project(":mineject-commons"))
 }

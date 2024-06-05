@@ -4,9 +4,14 @@ import xyz.failutee.mineject.bean.BeanManager;
 import xyz.failutee.mineject.bean.BeanSetupRegistry;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.dependency.DependencyProviderImpl;
+import xyz.failutee.mineject.event.EventDispatcher;
+import xyz.failutee.mineject.event.EventDispatcherImpl;
+import xyz.failutee.mineject.platform.InjectionPlatform;
+import xyz.failutee.mineject.platform.InjectionPlatformProvider;
 import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.settings.DependencySettingsBuilder;
 import xyz.failutee.mineject.settings.DependencySettingsConfigurer;
+import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 
 public class MinejectFactory {
 
@@ -14,18 +19,29 @@ public class MinejectFactory {
     private final BeanManager beanManager;
     private final BeanSetupRegistry beanSetupRegistry;
     private final DependencyProvider dependencyProvider;
+    private final SubscriberRegistry subscriberRegistry;
+    private final EventDispatcher eventDispatcher;
 
+    private InjectionPlatformProvider platformProvider;
     private DependencySettingsConfigurer dependencySettingsConfigurer;
 
     public MinejectFactory() {
         this.settings = DependencySettings.DEFAULT_SETTINGS;
+        this.platformProvider = (ignored) -> InjectionPlatform.EMPTY_PLATFORM;
         this.beanManager = new BeanManager();
         this.beanSetupRegistry = new BeanSetupRegistry();
         this.dependencyProvider = new DependencyProviderImpl(this.beanManager);
+        this.subscriberRegistry = new SubscriberRegistry();
+        this.eventDispatcher = new EventDispatcherImpl(this.subscriberRegistry, this.dependencyProvider);
     }
 
     public MinejectFactory dependencySettings(DependencySettingsConfigurer dependencySettingsConfigurer) {
         this.dependencySettingsConfigurer = dependencySettingsConfigurer;
+        return this;
+    }
+
+    public MinejectFactory platformProvider(InjectionPlatformProvider platformProvider) {
+        this.platformProvider = platformProvider;
         return this;
     }
 
@@ -35,13 +51,18 @@ public class MinejectFactory {
     }
 
     public Mineject build(boolean runInjection) {
-        this.dependencySettingsConfigurer.apply(this.settings);
+        if (this.dependencySettingsConfigurer != null) {
+            this.dependencySettingsConfigurer.apply(this.settings);
+        }
 
         var mineject = new Mineject(
             this.settings,
             this.beanManager,
             this.beanSetupRegistry,
-            this.dependencyProvider
+            this.dependencyProvider,
+            this.platformProvider,
+            this.subscriberRegistry,
+            this.eventDispatcher
         );
 
         if (runInjection) {

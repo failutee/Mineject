@@ -8,7 +8,7 @@ public class BeanManager {
     private final Map<Class<?>, Bean<?>> registeredBeans = new HashMap<>();
 
     public <T> void registerBean(Class<? extends T> beanClass, T instance) {
-        Bean<T> bean = new Bean<T>(beanClass, () -> instance);
+        Bean<T> bean = new Bean<>(beanClass, () -> instance);
 
         this.registeredBeans.put(beanClass, bean);
     }
