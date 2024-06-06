@@ -8,6 +8,6 @@ public class EmptyInjectionPlatform extends AbstractInjectionPlatform {
 
     @Override
     public Consumer<ClassProcessorManager> configureProcessors() {
-        return null;
+        return (ignore) -> { /* ... */ };
     }
 }

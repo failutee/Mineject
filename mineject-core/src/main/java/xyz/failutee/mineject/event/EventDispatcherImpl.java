@@ -19,34 +19,57 @@ public class EventDispatcherImpl implements EventDispatcher {
     }
 
     @Override
-    public void dispatchEvent(Event event) {
+    public <T extends Event> T dispatchEvent(T event) {
         List<Method> methods = this.registry.getMethodsByEvent(event);
 
         for (Method method : methods) {
-
-            if (method.getParameterCount() != 1 || method.getParameterTypes()[0] != event.getClass()) {
+            if (!this.isValidEventMethod(method, event)) {
                 continue;
             }
 
-            Class<?> declaringClass = method.getDeclaringClass();
+            this.invokeEventMethod(method, event);
 
-            Object instance = null;
-
-            if (!Modifier.isStatic(method.getModifiers())) {
-                try {
-                    instance = this.dependencyProvider.getDependency(declaringClass);
-                } catch (DependencyException exception) {
-                    throw new DependencyException("No dependency found for '%s', did you forget @Component?".formatted(declaringClass.getSimpleName()));
-                }
+            if (!(event instanceof CancellableEvent cancellableEvent)) {
+                continue;
             }
 
-            try {
-                method.setAccessible(true);
-                method.invoke(instance, event);
-            } catch (Exception exception) {
-                throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(declaringClass.getSimpleName(), method.getName(), event.getClass().getSimpleName()));
+            if (cancellableEvent.isCancelled()) {
+                break;
             }
+        }
 
+        return event;
+    }
+
+    private boolean isValidEventMethod(Method method, Event event) {
+        return method.getParameterCount() == 1 && method.getParameterTypes()[0] == event.getClass();
+    }
+
+    private void invokeEventMethod(Method method, Event event) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        Object instance = null;
+
+        if (!Modifier.isStatic(method.getModifiers())) {
+            instance = this.getDependencyInstance(declaringClass);
+        }
+
+        this.invokeMethod(instance, method, event);
+    }
+
+    private <T> T getDependencyInstance(Class<? extends T> declaringClass) {
+        try {
+            return this.dependencyProvider.getDependency(declaringClass);
+        } catch (DependencyException exception) {
+            throw new DependencyException("No dependency found for '%s', did you forget @Component?".formatted(declaringClass.getSimpleName()));
+        }
+    }
+
+    private void invokeMethod(Object instance, Method method, Event event) {
+        try {
+            method.setAccessible(true);
+            method.invoke(instance, event);
+        } catch (Exception exception) {
+            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()));
         }
     }
 }
