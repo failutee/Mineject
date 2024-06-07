@@ -28,14 +28,6 @@ public class EventDispatcherImpl implements EventDispatcher {
             }
 
             this.invokeEventMethod(method, event);
-
-            if (!(event instanceof CancellableEvent cancellableEvent)) {
-                continue;
-            }
-
-            if (cancellableEvent.isCancelled()) {
-                break;
-            }
         }
 
         return event;
