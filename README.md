@@ -19,7 +19,7 @@
 <hr />
 
 <div align="center">
-  <a href="https://failutee.gitbook.io/mineject/" style="text-decoration: none; color: inherit;">
+  <a href="https://failutee.gitbook.io/mineject/" target="_blank" style="text-decoration: none; color: inherit;">
     <img src="assets/docs.png" alt="docs" width="100" />
     <div>Click here to view full documentation</div>
   </a>
