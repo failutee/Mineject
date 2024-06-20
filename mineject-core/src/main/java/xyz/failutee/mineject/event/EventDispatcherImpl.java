@@ -1,6 +1,8 @@
 package xyz.failutee.mineject.event;
 
 import xyz.failutee.mineject.dependency.DependencyProvider;
+import xyz.failutee.mineject.dependency.DependencyResolver;
+import xyz.failutee.mineject.dependency.DependencyResolverImpl;
 import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 
@@ -11,10 +13,12 @@ import java.util.List;
 public class EventDispatcherImpl implements EventDispatcher {
 
     private final SubscriberRegistry registry;
+    private final DependencyResolver dependencyResolver;
     private final DependencyProvider dependencyProvider;
 
-    public EventDispatcherImpl(SubscriberRegistry registry, DependencyProvider dependencyProvider) {
+    public EventDispatcherImpl(SubscriberRegistry registry, DependencyResolver dependencyResolver, DependencyProvider dependencyProvider) {
         this.registry = registry;
+        this.dependencyResolver = dependencyResolver;
         this.dependencyProvider = dependencyProvider;
     }
 

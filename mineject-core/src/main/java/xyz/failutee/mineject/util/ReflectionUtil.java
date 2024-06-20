@@ -1,5 +1,8 @@
 package xyz.failutee.mineject.util;
 
+import xyz.failutee.mineject.annotation.Injectable;
+import xyz.failutee.mineject.exception.DependencyException;
+
 import java.lang.reflect.Constructor;
 
 public final class ReflectionUtil {
@@ -18,5 +21,23 @@ public final class ReflectionUtil {
         constructor.setAccessible(true);
 
         return constructor.newInstance(args);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Constructor<T> findConstructor(Class<T> clazz, Constructor<?>[] constructors) {
+        for (Constructor<?> constructor : constructors) {
+
+            if (!constructor.isAnnotationPresent(Injectable.class)) {
+                continue;
+            }
+
+            return (Constructor<T>) constructor;
+        }
+
+        try {
+            return clazz.getDeclaredConstructor();
+        } catch (Exception exception) {
+            throw new DependencyException("Could not find constructor for '%s' class, did you forgot @Injectable?".formatted(clazz.getSimpleName()));
+        }
     }
 }
