@@ -39,18 +39,9 @@ public class DependencyResolverImpl implements DependencyResolver {
     }
 
     @Override
-    public Object[] resolveArguments(Executable executable) {
-        return this.resolveArguments(executable, 0);
-    }
-
-    @Override
     public Object[] resolveArguments(Executable executable, int skip) {
         Parameter[] parameters = executable.getParameters();
         Object[] args = new Object[parameters.length];
-
-        if (skip > parameters.length) {
-            skip = parameters.length;
-        }
 
         for (int i = skip; i < parameters.length; i++) {
 
@@ -60,6 +51,11 @@ public class DependencyResolverImpl implements DependencyResolver {
         }
 
         return args;
+    }
+
+    @Override
+    public Object[] resolveArguments(Executable executable) {
+        return this.resolveArguments(executable, 0);
     }
 
     @Override

@@ -17,11 +17,15 @@ public class SubscriberRegistry {
 
         for (Class<?> clazz : classes) {
 
+            System.out.println(clazz.getSimpleName());
+
             if (!Subscriber.class.isAssignableFrom(clazz)) {
                 continue;
             }
 
-            for (Method method : clazz.getMethods()) {
+            System.out.println("assignable");
+
+            for (Method method : clazz.getDeclaredMethods()) {
 
                 if (!method.isAnnotationPresent(Subscribe.class)) {
                     continue;
@@ -29,10 +33,6 @@ public class SubscriberRegistry {
 
                 var parameterTypes = method.getParameterTypes();
                 var parameter = parameterTypes[0];
-
-                if (parameterTypes.length != 1) {
-                    continue;
-                }
 
                 this.castToClassEvent(parameter).ifPresent(eventClass -> this.registerEventClass(eventClass, method));
             }

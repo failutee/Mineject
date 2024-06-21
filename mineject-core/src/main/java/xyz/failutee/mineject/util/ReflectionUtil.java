@@ -4,6 +4,8 @@ import xyz.failutee.mineject.annotation.Injectable;
 import xyz.failutee.mineject.exception.DependencyException;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public final class ReflectionUtil {
 
@@ -39,5 +41,10 @@ public final class ReflectionUtil {
         } catch (Exception exception) {
             throw new DependencyException("Could not find constructor for '%s' class, did you forgot @Injectable?".formatted(clazz.getSimpleName()));
         }
+    }
+
+    public static void invokeMethod(Object instance, Method method, Object... args) throws InvocationTargetException, IllegalAccessException {
+        method.setAccessible(true);
+        method.invoke(instance, args);
     }
 }
