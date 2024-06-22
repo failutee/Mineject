@@ -13,7 +13,7 @@ public class MinejectExample extends JavaPlugin {
     @Override
     public void onEnable() {
         this.mineject = new MinejectFactory()
-                .dependencySettings(settings -> settings.packageName("xyz.failutee.mineject.example"))
+                .dependencySettings((settings, context) -> settings.packageName("xyz.failutee.mineject.example"))
                 .platformProvider(SpigotInjectionPlatform::new)
                 .withBean(Plugin.class, this)
                 .build(true);

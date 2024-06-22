@@ -12,7 +12,7 @@ import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.platform.InjectionPlatformProvider;
-import xyz.failutee.mineject.platform.PlatformContext;
+import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
@@ -33,6 +33,7 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
     private final SubscriberRegistry subscriberRegistry;
     private final EventDispatcher eventDispatcher;
     private final DependencyResolver dependencyResolver;
+    private final DependencyContext dependencyContext;
 
     protected Mineject(
         DependencySettings dependencySettings,
@@ -44,7 +45,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         InjectionPlatformProvider platformProvider,
         SubscriberRegistry subscriberRegistry,
         EventDispatcher eventDispatcher,
-        DependencyResolver dependencyResolver
+        DependencyResolver dependencyResolver,
+        DependencyContext dependencyContext
     ) {
         this.dependencySettings = dependencySettings;
         this.beanManager = beanManager;
@@ -56,6 +58,7 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         this.subscriberRegistry = subscriberRegistry;
         this.eventDispatcher = eventDispatcher;
         this.dependencyResolver = dependencyResolver;
+        this.dependencyContext = dependencyContext;
     }
 
     @Override
@@ -73,8 +76,7 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         this.beanSetupRegistry.collectBeanMethods(classes);
         this.subscriberRegistry.collectMethods(classes);
 
-        PlatformContext platformContext = PlatformContext.create(this.dependencyProvider, this.eventDispatcher);
-        InjectionPlatform platform = this.platformProvider.getPlatform(platformContext);
+        InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyContext);
 
         var dependencyComponents = new DependencyComponents(classes,
             this.dependencyResolver,

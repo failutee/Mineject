@@ -1,8 +1,10 @@
 package xyz.failutee.mineject.platform;
 
+import xyz.failutee.mineject.dependency.DependencyContext;
+
 @FunctionalInterface
 public interface InjectionPlatformProvider {
 
-    InjectionPlatform getPlatform(PlatformContext context);
+    InjectionPlatform getPlatform(DependencyContext context);
 
 }

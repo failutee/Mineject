@@ -4,10 +4,7 @@ import xyz.failutee.mineject.bean.BeanInvoker;
 import xyz.failutee.mineject.bean.BeanManager;
 import xyz.failutee.mineject.bean.BeanProcessor;
 import xyz.failutee.mineject.bean.BeanSetupRegistry;
-import xyz.failutee.mineject.dependency.DependencyProvider;
-import xyz.failutee.mineject.dependency.DependencyProviderImpl;
-import xyz.failutee.mineject.dependency.DependencyResolver;
-import xyz.failutee.mineject.dependency.DependencyResolverImpl;
+import xyz.failutee.mineject.dependency.*;
 import xyz.failutee.mineject.event.EventDispatcher;
 import xyz.failutee.mineject.event.EventDispatcherImpl;
 import xyz.failutee.mineject.platform.InjectionPlatform;
@@ -28,6 +25,7 @@ public class MinejectFactory {
     private final DependencyResolver dependencyResolver;
     private final EventDispatcher eventDispatcher;
     private final BeanInvoker beanInvoker;
+    private final DependencyContext dependencyContext;
 
     private InjectionPlatformProvider platformProvider;
     private DependencySettingsConfigurer dependencySettingsConfigurer;
@@ -43,6 +41,7 @@ public class MinejectFactory {
         this.dependencyResolver = new DependencyResolverImpl(this.beanManager, this.beanSetupRegistry, this.dependencyProvider);
         this.eventDispatcher = new EventDispatcherImpl(this.subscriberRegistry, this.dependencyResolver, this.dependencyProvider);
         this.beanInvoker = new BeanInvoker(this.dependencyResolver);
+        this.dependencyContext = DependencyContext.create(this.dependencyProvider, this.eventDispatcher);
     }
 
     public MinejectFactory dependencySettings(DependencySettingsConfigurer dependencySettingsConfigurer) {
@@ -62,7 +61,7 @@ public class MinejectFactory {
 
     public Mineject build(boolean runInjection) {
         if (this.dependencySettingsConfigurer != null) {
-            this.dependencySettingsConfigurer.apply(this.settings);
+            this.dependencySettingsConfigurer.apply(this.settings, this.dependencyContext);
         }
 
         this.settings.getProcessorConfigurer().configureProcessor(this.beanProcessor);
@@ -77,7 +76,8 @@ public class MinejectFactory {
             this.platformProvider,
             this.subscriberRegistry,
             this.eventDispatcher,
-            this.dependencyResolver
+            this.dependencyResolver,
+            this.dependencyContext
         );
 
         if (runInjection) {
