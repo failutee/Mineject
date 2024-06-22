@@ -18,13 +18,9 @@ public class SubscriberRegistry {
 
         for (Class<?> clazz : classes) {
 
-            System.out.println(clazz.getSimpleName());
-
             if (!Subscriber.class.isAssignableFrom(clazz)) {
                 continue;
             }
-
-            System.out.println("assignable");
 
             for (Method method : clazz.getDeclaredMethods()) {
 
