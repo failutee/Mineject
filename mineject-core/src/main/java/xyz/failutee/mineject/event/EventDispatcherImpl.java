@@ -1,20 +1,24 @@
 package xyz.failutee.mineject.event;
 
 import xyz.failutee.mineject.dependency.DependencyProvider;
+import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
+import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.List;
+import java.util.*;
 
 public class EventDispatcherImpl implements EventDispatcher {
 
     private final SubscriberRegistry registry;
+    private final DependencyResolver dependencyResolver;
     private final DependencyProvider dependencyProvider;
 
-    public EventDispatcherImpl(SubscriberRegistry registry, DependencyProvider dependencyProvider) {
+    public EventDispatcherImpl(SubscriberRegistry registry, DependencyResolver dependencyResolver, DependencyProvider dependencyProvider) {
         this.registry = registry;
+        this.dependencyResolver = dependencyResolver;
         this.dependencyProvider = dependencyProvider;
     }
 
@@ -34,7 +38,7 @@ public class EventDispatcherImpl implements EventDispatcher {
     }
 
     private boolean isValidEventMethod(Method method, Event event) {
-        return method.getParameterCount() == 1 && method.getParameterTypes()[0] == event.getClass();
+        return method.getParameterTypes()[0] == event.getClass();
     }
 
     private void invokeEventMethod(Method method, Event event) {
@@ -45,7 +49,14 @@ public class EventDispatcherImpl implements EventDispatcher {
             instance = this.getDependencyInstance(declaringClass);
         }
 
-        this.invokeMethod(instance, method, event);
+        Object[] arguments = this.dependencyResolver.resolveArguments(method, 1);
+        arguments[0] = event;
+
+        try {
+            ReflectionUtil.invokeMethod(instance, method, arguments);
+        } catch (Exception exception) {
+            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()));
+        }
     }
 
     private <T> T getDependencyInstance(Class<? extends T> declaringClass) {
@@ -53,15 +64,6 @@ public class EventDispatcherImpl implements EventDispatcher {
             return this.dependencyProvider.getDependency(declaringClass);
         } catch (DependencyException exception) {
             throw new DependencyException("No dependency found for '%s', did you forget @Component?".formatted(declaringClass.getSimpleName()));
-        }
-    }
-
-    private void invokeMethod(Object instance, Method method, Event event) {
-        try {
-            method.setAccessible(true);
-            method.invoke(instance, event);
-        } catch (Exception exception) {
-            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()));
         }
     }
 }
