@@ -80,11 +80,18 @@ public class MinejectFactory {
             this.dependencyContext
         );
 
+        this.registerDefaultBeans();
+
         if (runInjection) {
             mineject.runDependencyInjector();
         }
 
         return mineject;
+    }
+
+    private void registerDefaultBeans() {
+        this.beanManager.registerBean(DependencyProvider.class, this.dependencyProvider);
+        this.beanManager.registerBean(EventDispatcher.class, this.eventDispatcher);
     }
 
     public Mineject build() {
