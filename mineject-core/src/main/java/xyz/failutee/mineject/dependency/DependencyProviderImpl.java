@@ -35,4 +35,9 @@ public class DependencyProviderImpl implements DependencyProvider {
 
         return instances;
     }
+
+    @Override
+    public <T> void registerDependency(Class<? extends T> tClass, T instance) {
+        this.beanManager.registerBean(tClass, instance);
+    }
 }

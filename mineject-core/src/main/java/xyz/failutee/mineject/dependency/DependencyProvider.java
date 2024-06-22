@@ -8,4 +8,6 @@ public interface DependencyProvider {
 
     <T> Set<T> getDependencies(Class<T> tClass);
 
+    <T> void registerDependency(Class<? extends T> tClass, T instance);
+
 }
