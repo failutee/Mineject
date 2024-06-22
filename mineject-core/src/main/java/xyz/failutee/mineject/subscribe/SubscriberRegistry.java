@@ -1,6 +1,7 @@
 package xyz.failutee.mineject.subscribe;
 
 import xyz.failutee.mineject.event.Event;
+import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -41,13 +42,12 @@ public class SubscriberRegistry {
 
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<Class<? extends Event>> castToClassEvent(Class<?> clazz) {
         if (!Event.class.isAssignableFrom(clazz)) {
             return Optional.empty();
         }
 
-        return Optional.of((Class<? extends Event>) clazz);
+        return Optional.of(ReflectionUtil.unsafeCast(clazz));
     }
 
     public List<Method> getMethodsByEvent(Event event) {
