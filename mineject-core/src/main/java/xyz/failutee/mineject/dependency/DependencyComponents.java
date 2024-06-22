@@ -48,6 +48,12 @@ public class DependencyComponents {
     public void processPlatform() {
         for (Class<?> clazz : this.classes) {
 
+            if (!this.beanProcessor.isProcessed(clazz)) {
+                continue;
+            }
+
+            System.out.println(clazz.getSimpleName() + " is processed!");
+
             Object instance = this.dependencyResolver.getOrCreateBean(clazz);
 
             this.beanProcessor.processBean(clazz, instance);

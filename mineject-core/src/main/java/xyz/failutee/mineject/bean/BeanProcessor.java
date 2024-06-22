@@ -22,12 +22,20 @@ public class BeanProcessor {
         return this;
     }
 
+    public boolean isProcessed(Class<?> clazz) {
+        if (this.processorRegistry.containsKey(clazz)) {
+            return true;
+        }
+
+        return this.processorRegistry.keySet().stream().anyMatch(keyClass -> keyClass.isAssignableFrom(clazz));
+    }
+
     public <T> void processBean(Class<? extends T> clazz, T instance) {
-        Set<Processor<T>> processors = ReflectionUtil.unsafeCast(this.processorRegistry.get(clazz));
-        
-        if (processors == null) {
+        if (!this.isProcessed(clazz)) {
             return;
         }
+
+        Set<Processor<T>> processors = ReflectionUtil.unsafeCast(this.processorRegistry.get(clazz));
 
         processors.forEach(processor -> processor.process(instance));
     }

@@ -9,16 +9,13 @@ import java.lang.reflect.*;
 
 public class DependencyResolverImpl implements DependencyResolver {
 
-    private final BeanManager beanManager;
     private final BeanSetupRegistry beanSetupRegistry;
     private final DependencyProvider dependencyProvider;
 
     public DependencyResolverImpl(
-        BeanManager beanManager,
         BeanSetupRegistry beanSetupRegistry,
         DependencyProvider dependencyProvider
     ) {
-        this.beanManager = beanManager;
         this.beanSetupRegistry = beanSetupRegistry;
         this.dependencyProvider = dependencyProvider;
     }
@@ -61,14 +58,15 @@ public class DependencyResolverImpl implements DependencyResolver {
     @Override
     public <T> Object getOrCreateBean(Class<? extends T> clazz) {
         return this.beanSetupRegistry.searchBeanInstance(clazz).orElseGet(() -> {
-            if (this.beanManager.containsBean(clazz)) {
+            try {
                 return this.dependencyProvider.getDependency(clazz);
+            } catch (DependencyException exception) {
+                Object instance = this.createInstance(clazz);
+
+                this.beanSetupRegistry.registerBeanType(instance);
+
+                return instance;
             }
-
-            Object instance = this.createInstance(clazz);
-            this.beanSetupRegistry.registerBeanType(instance);
-
-            return instance;
         });
     }
 }

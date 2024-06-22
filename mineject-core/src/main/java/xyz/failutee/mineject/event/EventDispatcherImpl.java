@@ -63,7 +63,7 @@ public class EventDispatcherImpl implements EventDispatcher {
         try {
             return this.dependencyProvider.getDependency(declaringClass);
         } catch (DependencyException exception) {
-            throw new DependencyException("No dependency found for '%s', did you forget @Component?".formatted(declaringClass.getSimpleName()));
+            return this.dependencyResolver.createInstance(declaringClass);
         }
     }
 }

@@ -38,7 +38,7 @@ public class MinejectFactory {
         this.beanManager = new BeanManager();
         this.beanProcessor = new BeanProcessor();
         this.dependencyProvider = new DependencyProviderImpl(this.beanManager);
-        this.dependencyResolver = new DependencyResolverImpl(this.beanManager, this.beanSetupRegistry, this.dependencyProvider);
+        this.dependencyResolver = new DependencyResolverImpl(this.beanSetupRegistry, this.dependencyProvider);
         this.eventDispatcher = new EventDispatcherImpl(this.subscriberRegistry, this.dependencyResolver, this.dependencyProvider);
         this.beanInvoker = new BeanInvoker(this.dependencyResolver);
         this.dependencyContext = DependencyContext.create(this.dependencyProvider, this.eventDispatcher);
