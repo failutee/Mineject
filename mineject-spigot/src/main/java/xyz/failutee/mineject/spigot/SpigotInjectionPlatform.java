@@ -31,7 +31,7 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
             PluginManager pluginManager = this.plugin.getServer().getPluginManager();
             pluginManager.registerEvents(listener, this.plugin);
         })
-        .onProcess(ScheduledTask.class, Task.class, (task, object) -> {
+        .onProcess(Task.class, ScheduledTask.class, (task, object) -> {
             Class<?> clazz = object.getClass();
 
             if (!BukkitTask.class.isAssignableFrom(clazz)) {

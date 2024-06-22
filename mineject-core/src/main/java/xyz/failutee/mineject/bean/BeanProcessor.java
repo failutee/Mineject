@@ -12,7 +12,7 @@ public class BeanProcessor {
 
     private final Map<Class<?>, Set<Processor<?>>> processorRegistry = new HashMap<>();
 
-    public <A extends Annotation, T> BeanProcessor onProcess(Class<? extends T> typeClass, Class<A> annotationClass, AnnotedProcessorFunction<A, T> processorFunction) {
+    public <A extends Annotation, T> BeanProcessor onProcess(Class<A> annotationClass, Class<? extends T> typeClass, AnnotedProcessorFunction<A, T> processorFunction) {
         AnnotedProcessor<A, T> processor = new AnnotedProcessor<>(annotationClass, processorFunction);
         return this.onProcess(typeClass, processor);
     }
