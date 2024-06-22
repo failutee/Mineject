@@ -2,6 +2,7 @@ package xyz.failutee.mineject;
 
 import xyz.failutee.mineject.bean.BeanInvoker;
 import xyz.failutee.mineject.bean.BeanManager;
+import xyz.failutee.mineject.bean.BeanProcessor;
 import xyz.failutee.mineject.bean.BeanSetupRegistry;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.dependency.DependencyProviderImpl;
@@ -22,6 +23,7 @@ public class MinejectFactory {
     private final BeanSetupRegistry beanSetupRegistry;
     private final SubscriberRegistry subscriberRegistry;
     private final BeanManager beanManager;
+    private final BeanProcessor beanProcessor;
     private final DependencyProvider dependencyProvider;
     private final DependencyResolver dependencyResolver;
     private final EventDispatcher eventDispatcher;
@@ -36,6 +38,7 @@ public class MinejectFactory {
         this.beanSetupRegistry = new BeanSetupRegistry();
         this.subscriberRegistry = new SubscriberRegistry();
         this.beanManager = new BeanManager();
+        this.beanProcessor = new BeanProcessor();
         this.dependencyProvider = new DependencyProviderImpl(this.beanManager);
         this.dependencyResolver = new DependencyResolverImpl(this.beanManager, this.beanSetupRegistry, this.dependencyProvider);
         this.eventDispatcher = new EventDispatcherImpl(this.subscriberRegistry, this.dependencyResolver, this.dependencyProvider);
@@ -62,9 +65,12 @@ public class MinejectFactory {
             this.dependencySettingsConfigurer.apply(this.settings);
         }
 
+        this.settings.getProcessorConfigurer().configureProcessor(this.beanProcessor);
+
         var mineject = new Mineject(
             this.settings,
             this.beanManager,
+            this.beanProcessor,
             this.beanInvoker,
             this.beanSetupRegistry,
             this.dependencyProvider,

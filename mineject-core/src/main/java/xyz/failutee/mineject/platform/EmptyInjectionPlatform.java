@@ -1,13 +1,11 @@
 package xyz.failutee.mineject.platform;
 
-import xyz.failutee.mineject.processor.ClassProcessorManager;
+import xyz.failutee.mineject.processor.ProcessorConfigurer;
 
-import java.util.function.Consumer;
-
-public class EmptyInjectionPlatform extends AbstractInjectionPlatform {
+public class EmptyInjectionPlatform implements InjectionPlatform {
 
     @Override
-    public Consumer<ClassProcessorManager> configureProcessors() {
-        return (ignore) -> { /* ... */ };
+    public ProcessorConfigurer getProcessorConfigurer() {
+        return ignore -> {};
     }
 }

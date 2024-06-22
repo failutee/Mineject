@@ -16,8 +16,8 @@ public class BeanInvoker {
     @SuppressWarnings("unchecked")
     public <T> T invokeBeanMethod(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
-        Object[] args = this.dependencyResolver.resolveArguments(method);
 
+        Object[] args = this.dependencyResolver.resolveArguments(method);
         Object instance = this.dependencyResolver.getOrCreateBean(declaringClass);
 
         method.setAccessible(true);

@@ -3,9 +3,8 @@ package xyz.failutee.mineject.dependency;
 import xyz.failutee.mineject.annotation.Component;
 import xyz.failutee.mineject.bean.BeanInvoker;
 import xyz.failutee.mineject.bean.BeanManager;
+import xyz.failutee.mineject.bean.BeanProcessor;
 import xyz.failutee.mineject.bean.BeanSetupRegistry;
-import xyz.failutee.mineject.platform.InjectionPlatform;
-import xyz.failutee.mineject.processor.ClassProcessorManager;
 import xyz.failutee.mineject.util.AnnotationUtil;
 
 import java.lang.reflect.Method;
@@ -13,27 +12,27 @@ import java.util.Set;
 
 public class DependencyComponents {
 
+    private final Set<Class<?>> classes;
     private final DependencyResolver dependencyResolver;
     private final BeanInvoker beanInvoker;
     private final BeanManager beanManager;
+    private final BeanProcessor beanProcessor;
     private final BeanSetupRegistry beanSetupRegistry;
-    private final InjectionPlatform platform;
-    private final Set<Class<?>> classes;
 
     public DependencyComponents(
+        Set<Class<?>> classes,
         DependencyResolver dependencyResolver,
         BeanInvoker beanInvoker,
         BeanManager beanManager,
-        BeanSetupRegistry beanSetupRegistry,
-        InjectionPlatform platform,
-        Set<Class<?>> classes
+        BeanProcessor beanProcessor,
+        BeanSetupRegistry beanSetupRegistry
     ) {
+        this.classes = classes;
         this.dependencyResolver = dependencyResolver;
         this.beanInvoker = beanInvoker;
         this.beanManager = beanManager;
+        this.beanProcessor = beanProcessor;
         this.beanSetupRegistry = beanSetupRegistry;
-        this.platform = platform;
-        this.classes = classes;
     }
 
     public void processBeans() {
@@ -47,15 +46,11 @@ public class DependencyComponents {
     }
 
     public void processPlatform() {
-        ClassProcessorManager classProcessorManager = this.platform.getClassProcessorManager();
-
         for (Class<?> clazz : this.classes) {
 
-            classProcessorManager.getClassProcessor(clazz).ifPresent(processor -> {
-                Object instance = this.dependencyResolver.getOrCreateBean(clazz);
+            Object instance = this.dependencyResolver.getOrCreateBean(clazz);
 
-                processor.processClass(instance);
-            });
+            this.beanProcessor.processBean(clazz, instance);
 
         }
     }

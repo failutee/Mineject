@@ -13,6 +13,11 @@ public final class ReflectionUtil {
         throw new UnsupportedOperationException("This is a utility class and cannot be initialized");
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T unsafeCast(Object object) {
+        return (T) object;
+    }
+
     public static <T> T createNewInstance(Constructor<T> constructor, Object... args) throws Exception {
         if (args.length == 0) {
             return constructor.newInstance();
