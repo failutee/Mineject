@@ -52,8 +52,6 @@ public class DependencyComponents {
                 continue;
             }
 
-            System.out.println(clazz.getSimpleName() + " is processed!");
-
             Object instance = this.dependencyResolver.getOrCreateBean(clazz);
 
             this.beanProcessor.processBean(clazz, instance);

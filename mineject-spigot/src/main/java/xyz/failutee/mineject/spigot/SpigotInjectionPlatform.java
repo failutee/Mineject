@@ -27,17 +27,6 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
     @Override
     public ProcessorConfigurer getProcessorConfigurer() {
         return beanProcessor -> beanProcessor.onProcess(Listener.class, (listener) -> {
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
-                    System.out.println(listener.getClass().getSimpleName() + " jkfsgijdfg[0oidjfg[oj[OISDFHJGDF[9G8UFDG9DFOI");
             PluginManager pluginManager = this.plugin.getServer().getPluginManager();
             pluginManager.registerEvents(listener, this.plugin);
         })

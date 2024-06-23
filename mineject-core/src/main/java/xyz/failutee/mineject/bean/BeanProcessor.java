@@ -30,13 +30,28 @@ public class BeanProcessor {
         return this.processorRegistry.keySet().stream().anyMatch(keyClass -> keyClass.isAssignableFrom(clazz));
     }
 
+    private <T> List<Class<? extends T>> findProcessorKey(Class<T> clazz) {
+        List<Class<? extends T>> keys = new ArrayList<>();
+
+        for (Class<?> keyClass : this.processorRegistry.keySet()) {
+            if (keyClass.isAssignableFrom(clazz)) {
+                keys.add(ReflectionUtil.unsafeCast(keyClass));
+            }
+        }
+        return keys;
+    }
+
     public <T> void processBean(Class<? extends T> clazz, T instance) {
         if (!this.isProcessed(clazz)) {
             return;
         }
 
-        Set<Processor<T>> processors = ReflectionUtil.unsafeCast(this.processorRegistry.get(clazz));
+        List<Class<? extends T>> keyClasses = ReflectionUtil.unsafeCast(this.findProcessorKey(clazz));
 
-        processors.forEach(processor -> processor.process(instance));
+        for (Class<? extends T> keyClass : keyClasses) {
+            Set<Processor<T>> processors = ReflectionUtil.unsafeCast(this.processorRegistry.get(keyClass));
+
+            processors.forEach(processor -> processor.process(instance));
+        }
     }
 }
