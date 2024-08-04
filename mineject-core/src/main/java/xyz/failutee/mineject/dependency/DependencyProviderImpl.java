@@ -34,7 +34,7 @@ public class DependencyProviderImpl implements DependencyProvider {
 
         Bean<T> bean = optionalBean.get();
 
-        if (bean.isInitialized()) {
+        if (!bean.isInitialized()) {
             throw new DependencyException("Bean '%s' is not initialized".formatted(beanClass.getSimpleName()));
         }
 
