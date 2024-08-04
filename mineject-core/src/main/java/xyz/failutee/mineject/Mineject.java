@@ -1,11 +1,14 @@
 package xyz.failutee.mineject;
 
 import xyz.failutee.mineject.bean.*;
+import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.event.EventDispatcher;
 import xyz.failutee.mineject.event.EventDispatcherProvider;
 import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
+import xyz.failutee.mineject.platform.InjectionPlatform;
+import xyz.failutee.mineject.platform.InjectionPlatformProvider;
 import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
@@ -20,6 +23,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
     private final SubscriberRegistry subscriberRegistry;
     private final DependencyResolver dependencyResolver;
     private final DependencyProvider dependencyProvider;
+    private final InjectionPlatformProvider platformProvider;
+    private final DependencyContext dependencyContext;
     private final EventDispatcher eventDispatcher;
     private final BeanProcessor beanProcessor;
     private final BeanService beanService;
@@ -29,6 +34,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         SubscriberRegistry subscriberRegistry,
         DependencyResolver dependencyResolver,
         DependencyProvider dependencyProvider,
+        InjectionPlatformProvider platformProvider,
+        DependencyContext dependencyContext,
         EventDispatcher eventDispatcher,
         BeanProcessor beanProcessor,
         BeanService beanService
@@ -37,6 +44,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         this.subscriberRegistry = subscriberRegistry;
         this.dependencyResolver = dependencyResolver;
         this.dependencyProvider = dependencyProvider;
+        this.platformProvider = platformProvider;
+        this.dependencyContext = dependencyContext;
         this.eventDispatcher = eventDispatcher;
         this.beanProcessor = beanProcessor;
         this.beanService = beanService;
@@ -53,6 +62,12 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         ClassLoader classLoader = this.getClass().getClassLoader();
 
         Set<Class<?>> classes = ClassScannerUtil.scanClasses(packageName, classLoader);
+
+        InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyContext);
+
+        if (!InjectionPlatform.isEmpty(platform)) {
+            platform.getProcessorConfigurer().configureProcessor(this.beanProcessor);
+        }
 
         this.subscriberRegistry.collectSubscribedMethods(classes);
         this.beanService.collectBeans(classes);

@@ -69,6 +69,8 @@ public class MinejectFactory {
             this.subscriberRegistry,
             this.dependencyResolver,
             this.dependencyProvider,
+            this.platformProvider,
+            this.dependencyContext,
             this.eventDispatcher,
             this.beanProcessor,
             this.beanService
