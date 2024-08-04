@@ -1,7 +1,6 @@
 package xyz.failutee.mineject.subscribe;
 
 import xyz.failutee.mineject.event.Event;
-import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -28,22 +27,11 @@ public class SubscriberRegistry {
                     continue;
                 }
 
-                var parameterTypes = method.getParameterTypes();
-                var parameter = parameterTypes[0];
+                Subscribe subscribe = method.getAnnotation(Subscribe.class);
 
-                this.castToClassEvent(parameter).ifPresent(eventClass -> this.registerEventClass(eventClass, method));
+                this.registerEventClass(subscribe.value(), method);
             }
-
         }
-
-    }
-
-    private Optional<Class<? extends Event>> castToClassEvent(Class<?> clazz) {
-        if (!Event.class.isAssignableFrom(clazz)) {
-            return Optional.empty();
-        }
-
-        return Optional.of(ReflectionUtil.unsafeCast(clazz));
     }
 
     public List<Method> getMethodsByEvent(Event event) {

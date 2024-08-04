@@ -47,7 +47,11 @@ public class DependencyProviderImpl implements DependencyProvider {
             return this.getDependency(tClass);
         }
         catch (DependencyException exception) {
-            return this.dependencyResolver.createInstance(tClass);
+            T instance = this.dependencyResolver.createInstance(tClass);
+
+            this.registerDependency(tClass, instance);
+
+            return instance;
         }
     }
 
