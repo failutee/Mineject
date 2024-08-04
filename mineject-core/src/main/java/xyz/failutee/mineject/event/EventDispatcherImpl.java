@@ -28,6 +28,9 @@ public class EventDispatcherImpl implements EventDispatcher {
         List<Method> methods = this.registry.getMethodsByEvent(event);
 
         for (Method method : methods) {
+            if (event instanceof CancellableEvent cancellableEvent && cancellableEvent.isCancelled()) {
+                break;
+            }
             this.invokeEventMethod(method, event);
         }
 
