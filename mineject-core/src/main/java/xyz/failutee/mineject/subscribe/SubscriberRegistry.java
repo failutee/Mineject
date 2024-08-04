@@ -14,7 +14,7 @@ public class SubscriberRegistry {
         this.eventsMethods.computeIfAbsent(eventClass, ignore -> new ArrayList<>()).add(method);
     }
 
-    public void collectMethods(Collection<Class<?>> classes) {
+    public void collectSubscribedMethods(Collection<Class<?>> classes) {
 
         for (Class<?> clazz : classes) {
 

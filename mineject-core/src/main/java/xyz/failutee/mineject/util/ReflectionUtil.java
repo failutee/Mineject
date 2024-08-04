@@ -30,7 +30,6 @@ public final class ReflectionUtil {
         return constructor.newInstance(args);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> Constructor<T> findConstructor(Class<T> clazz, Constructor<?>[] constructors) {
         for (Constructor<?> constructor : constructors) {
 
@@ -38,13 +37,13 @@ public final class ReflectionUtil {
                 continue;
             }
 
-            return (Constructor<T>) constructor;
+            return ReflectionUtil.unsafeCast(constructor);
         }
 
         try {
             return clazz.getDeclaredConstructor();
         } catch (Exception exception) {
-            throw new DependencyException("Could not find constructor for '%s' class, did you forgot @Injectable?".formatted(clazz.getSimpleName()));
+            throw new DependencyException("Could not find constructor for '%s' class, did you forgot @Injectable?".formatted(clazz.getSimpleName()), exception);
         }
     }
 

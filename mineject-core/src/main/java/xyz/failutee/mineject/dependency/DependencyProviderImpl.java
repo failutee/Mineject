@@ -1,43 +1,61 @@
 package xyz.failutee.mineject.dependency;
 
 import xyz.failutee.mineject.bean.Bean;
-import xyz.failutee.mineject.bean.BeanManager;
+import xyz.failutee.mineject.bean.BeanService;
+import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.exception.DependencyException;
 
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DependencyProviderImpl implements DependencyProvider {
 
-    private final BeanManager beanManager;
+    private final DependencyResolver dependencyResolver;
+    private final BeanService beanService;
 
-    public DependencyProviderImpl(BeanManager beanManager) {
-        this.beanManager = beanManager;
+    public DependencyProviderImpl(DependencyResolver dependencyResolver, BeanService beanService) {
+        this.dependencyResolver = dependencyResolver;
+        this.beanService = beanService;
     }
 
     @Override
-    public <T> T getDependency(Class<T> tClass) {
-        Set<T> dependencies = this.getDependencies(tClass);
+    public <T> T getDependency(Class<T> beanClass) {
+        Set<T> dependencies = this.getDependencies(beanClass);
         return dependencies.iterator().next();
     }
 
     @Override
-    public <T> Set<T> getDependencies(Class<T> tClass) {
-        Set<T> instances = this.beanManager.searchBeansByClass(tClass)
-                .stream()
-                .map(Bean::getInstance)
-                .map(tClass::cast)
-                .collect(Collectors.toSet());
+    public <T> Set<T> getDependencies(Class<T> beanClass) {
+        Optional<Bean<T>> optionalBean = this.beanService.getBean(beanClass);
 
-        if (instances.isEmpty()) {
-            throw new DependencyException("Dependency not found for '%s' class".formatted(tClass.getSimpleName()));
+        if (optionalBean.isEmpty()) {
+            throw new DependencyException("Dependency not found for '%s' class".formatted(beanClass.getSimpleName()));
         }
 
-        return instances;
+        Bean<T> bean = optionalBean.get();
+
+        if (bean.isInitialized()) {
+            throw new DependencyException("Bean '%s' is not initialized".formatted(beanClass.getSimpleName()));
+        }
+
+        return Set.of(bean.getInstance());
+    }
+
+    @Override
+    public <T> T getOrCreate(Class<T> tClass) {
+        try {
+            return this.getDependency(tClass);
+        }
+        catch (DependencyException exception) {
+            return this.dependencyResolver.createInstance(tClass);
+        }
     }
 
     @Override
     public <T> void registerDependency(Class<? extends T> tClass, T instance) {
-        this.beanManager.registerBean(tClass, instance);
+        var bean = new ComponentBean<>();
+        bean.initializeBean(instance);
+
+        this.beanService.registerBean(tClass, bean);
     }
 }

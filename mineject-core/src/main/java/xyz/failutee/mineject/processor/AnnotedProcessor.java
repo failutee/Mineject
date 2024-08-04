@@ -26,4 +26,8 @@ public class AnnotedProcessor<A extends Annotation, T> implements Processor<T> {
 
         this.processorFunction.process(annotation, instance);
     }
+
+    public Class<? extends A> getAnnotationType() {
+        return this.annotationType;
+    }
 }

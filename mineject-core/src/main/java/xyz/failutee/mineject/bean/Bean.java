@@ -1,27 +1,15 @@
 package xyz.failutee.mineject.bean;
 
-import java.util.function.Supplier;
+import xyz.failutee.mineject.dependency.DependencyResolver;
 
-public class Bean<T> {
+public interface Bean<T> {
 
-    private T instance;
+    void initializeBean(T instance);
 
-    private final Class<? extends T> instanceClass;
-    private final Supplier<T> instanceSupplier;
+    boolean isInitialized();
 
-    public Bean(Class<? extends T> instanceClass, Supplier<T> instanceSupplier) {
-        this.instanceClass = instanceClass;
-        this.instanceSupplier = instanceSupplier;
-    }
+    T getInstance();
 
-    public Class<? extends T> getInstanceClass() {
-        return this.instanceClass;
-    }
+    void handleBean(Class<? extends T> beanClass, DependencyResolver dependencyResolver);
 
-    public T getInstance() {
-        if (this.instanceSupplier != null) {
-            this.instance = this.instanceSupplier.get();
-        }
-        return this.instance;
-    }
 }
