@@ -1,11 +1,10 @@
 package xyz.failutee.mineject.bean;
 
-import xyz.failutee.mineject.annotation.BeanSetup;
-import xyz.failutee.mineject.annotation.Component;
+
 import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.bean.impl.MethodBean;
 import xyz.failutee.mineject.bean.impl.ProcessedBean;
-import xyz.failutee.mineject.processor.Processor;
+import xyz.failutee.mineject.util.AnnotationUtil;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.reflect.Method;
@@ -51,6 +50,7 @@ public class BeanService {
                 .collect(Collectors.toSet());
     }
 
+    // TODO: Handle multiple bean types
     public void collectBeans(Collection<Class<?>> classes) {
         for (Class<?> clazz : classes) {
 
@@ -58,16 +58,16 @@ public class BeanService {
                 this.registerBean(clazz, new ProcessedBean<>(this.beanProcessor.getProcessors(clazz)));
             }
 
-            if (clazz.isAnnotationPresent(Component.class)) {
+            if (AnnotationUtil.isComponent(clazz)) {
                 this.registerBean(clazz, new ComponentBean<>());
             }
 
-            if (clazz.isAnnotationPresent(BeanSetup.class)) {
+            if (AnnotationUtil.isBeanSetup(clazz)) {
                 this.registerBean(clazz, new ComponentBean<>());
 
                 for (Method method : clazz.getDeclaredMethods()) {
 
-                    if (!method.isAnnotationPresent(xyz.failutee.mineject.annotation.Bean.class)) {
+                    if (!AnnotationUtil.isMethodBean(method)) {
                         continue;
                     }
 
@@ -75,7 +75,6 @@ public class BeanService {
 
                 }
             }
-
         }
     }
 
