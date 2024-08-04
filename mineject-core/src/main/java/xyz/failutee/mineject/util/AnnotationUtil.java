@@ -1,8 +1,10 @@
 package xyz.failutee.mineject.util;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.util.stream.Stream;
+import xyz.failutee.mineject.annotation.Bean;
+import xyz.failutee.mineject.annotation.BeanSetup;
+import xyz.failutee.mineject.annotation.Component;
+
+import java.lang.reflect.Method;
 
 public final class AnnotationUtil {
 
@@ -10,11 +12,15 @@ public final class AnnotationUtil {
         throw new UnsupportedOperationException("This is a utility class and cannot be initialized");
     }
 
-    // Use annotationType to bypass google proxy mechanism
-    public static boolean hasAnnotation(AnnotatedElement element, Class<? extends Annotation> annotationType) {
-        Annotation[] annotations = element.getDeclaredAnnotations();
+    public static boolean isComponent(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Component.class);
+    }
 
-        return Stream.of(annotations)
-                .anyMatch(currentAnnotation -> currentAnnotation.annotationType() == annotationType);
+    public static boolean isBeanSetup(Class<?> clazz) {
+        return clazz.isAnnotationPresent(BeanSetup.class);
+    }
+
+    public static boolean isMethodBean(Method method) {
+        return method.isAnnotationPresent(Bean.class);
     }
 }

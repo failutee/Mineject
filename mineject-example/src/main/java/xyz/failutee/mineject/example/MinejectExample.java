@@ -8,11 +8,9 @@ import xyz.failutee.mineject.spigot.SpigotInjectionPlatform;
 
 public class MinejectExample extends JavaPlugin {
 
-    private Mineject mineject;
-
     @Override
     public void onEnable() {
-        this.mineject = new MinejectFactory()
+        Mineject mineject = MinejectFactory.create()
                 .dependencySettings((settings, context) -> settings.packageName("xyz.failutee.mineject.example"))
                 .platformProvider(SpigotInjectionPlatform::new)
                 .withBean(Plugin.class, this)

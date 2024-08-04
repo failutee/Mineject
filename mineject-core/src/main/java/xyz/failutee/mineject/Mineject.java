@@ -1,10 +1,7 @@
 package xyz.failutee.mineject;
 
-import xyz.failutee.mineject.bean.BeanInvoker;
-import xyz.failutee.mineject.bean.BeanManager;
-import xyz.failutee.mineject.bean.BeanProcessor;
-import xyz.failutee.mineject.bean.BeanSetupRegistry;
-import xyz.failutee.mineject.dependency.DependencyComponents;
+import xyz.failutee.mineject.bean.*;
+import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.event.EventDispatcher;
 import xyz.failutee.mineject.event.EventDispatcherProvider;
@@ -12,7 +9,6 @@ import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.platform.InjectionPlatformProvider;
-import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
@@ -24,41 +20,35 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
     private boolean isInitialized = false;
 
     private final DependencySettings dependencySettings;
-    private final BeanManager beanManager;
-    private final BeanProcessor beanProcessor;
-    private final BeanInvoker beanInvoker;
-    private final BeanSetupRegistry beanSetupRegistry;
+    private final SubscriberRegistry subscriberRegistry;
+    private final DependencyResolver dependencyResolver;
     private final DependencyProvider dependencyProvider;
     private final InjectionPlatformProvider platformProvider;
-    private final SubscriberRegistry subscriberRegistry;
-    private final EventDispatcher eventDispatcher;
-    private final DependencyResolver dependencyResolver;
     private final DependencyContext dependencyContext;
+    private final EventDispatcher eventDispatcher;
+    private final BeanProcessor beanProcessor;
+    private final BeanService beanService;
 
     protected Mineject(
         DependencySettings dependencySettings,
-        BeanManager beanManager,
-        BeanProcessor beanProcessor,
-        BeanInvoker beanInvoker,
-        BeanSetupRegistry beanSetupRegistry,
+        SubscriberRegistry subscriberRegistry,
+        DependencyResolver dependencyResolver,
         DependencyProvider dependencyProvider,
         InjectionPlatformProvider platformProvider,
-        SubscriberRegistry subscriberRegistry,
+        DependencyContext dependencyContext,
         EventDispatcher eventDispatcher,
-        DependencyResolver dependencyResolver,
-        DependencyContext dependencyContext
+        BeanProcessor beanProcessor,
+        BeanService beanService
     ) {
         this.dependencySettings = dependencySettings;
-        this.beanManager = beanManager;
-        this.beanProcessor = beanProcessor;
-        this.beanInvoker = beanInvoker;
-        this.beanSetupRegistry = beanSetupRegistry;
+        this.subscriberRegistry = subscriberRegistry;
+        this.dependencyResolver = dependencyResolver;
         this.dependencyProvider = dependencyProvider;
         this.platformProvider = platformProvider;
-        this.subscriberRegistry = subscriberRegistry;
-        this.eventDispatcher = eventDispatcher;
-        this.dependencyResolver = dependencyResolver;
         this.dependencyContext = dependencyContext;
+        this.eventDispatcher = eventDispatcher;
+        this.beanProcessor = beanProcessor;
+        this.beanService = beanService;
     }
 
     @Override
@@ -73,26 +63,25 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
 
         Set<Class<?>> classes = ClassScannerUtil.scanClasses(packageName, classLoader);
 
-        this.beanSetupRegistry.collectBeanMethods(classes);
-        this.subscriberRegistry.collectMethods(classes);
-
         InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyContext);
-
-        var dependencyComponents = new DependencyComponents(classes,
-            this.dependencyResolver,
-            this.beanInvoker,
-            this.beanManager,
-            this.beanProcessor,
-            this.beanSetupRegistry
-        );
-
-        dependencyComponents.processBeans();
-        dependencyComponents.createComponents();
 
         if (!InjectionPlatform.isEmpty(platform)) {
             platform.getProcessorConfigurer().configureProcessor(this.beanProcessor);
-            dependencyComponents.processPlatform();
         }
+
+        this.subscriberRegistry.collectSubscribedMethods(classes);
+        this.beanService.collectBeans(classes);
+
+        this.beanService.getBeans().forEach(beanHolder -> {
+            Class<?> beanClass = beanHolder.beanClass();
+            Bean<?> bean = beanHolder.bean();
+
+            if (bean.isInitialized()) {
+                return;
+            }
+
+            this.dependencyResolver.getOrInitialize(beanClass);
+        });
     }
 
     @Override
