@@ -3,18 +3,20 @@ package xyz.failutee.mineject.bean;
 import xyz.failutee.mineject.processor.AnnotedProcessor;
 import xyz.failutee.mineject.processor.AnnotedProcessorFunction;
 import xyz.failutee.mineject.processor.Processor;
+import xyz.failutee.mineject.util.CollectionUtil;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeanProcessor {
 
     private final Map<Class<?>, Set<Processor<?>>> processorRegistry = new HashMap<>();
 
-    public <A extends Annotation, T> BeanProcessor onProcess(Class<A> annotationClass, Class<? extends T> typeClass, AnnotedProcessorFunction<A, T> processorFunction) {
-        AnnotedProcessor<A, T> processor = new AnnotedProcessor<>(annotationClass, processorFunction);
-        return this.onProcess(typeClass, processor);
+    public <A extends Annotation, T> BeanProcessor onProcess(Class<A> annotationClass, Class<? extends T> typeClass, AnnotedProcessorFunction<A, T> function) {
+        var processedAnnotation = new AnnotedProcessor<>(annotationClass, function);
+        return this.onProcess(typeClass, processedAnnotation);
     }
 
     public <T> BeanProcessor onProcess(Class<? extends T> typeClass, Processor<T> processor) {
@@ -23,14 +25,10 @@ public class BeanProcessor {
     }
 
     public boolean isProcessed(Class<?> clazz) {
-        if (this.processorRegistry.containsKey(clazz)) {
-            return true;
-        }
-
-        return this.processorRegistry.keySet().stream().anyMatch(keyClass -> keyClass.isAssignableFrom(clazz));
+        return CollectionUtil.isAnyClassAssignableFrom(this.processorRegistry.keySet(), clazz);
     }
 
-    private <T> List<Class<? extends T>> findProcessorKey(Class<T> clazz) {
+    public <T> List<Class<? extends T>> findProcessorKey(Class<T> clazz) {
         List<Class<? extends T>> keys = new ArrayList<>();
 
         for (Class<?> keyClass : this.processorRegistry.keySet()) {
@@ -41,17 +39,27 @@ public class BeanProcessor {
         return keys;
     }
 
-    public <T> void processBean(Class<? extends T> clazz, T instance) {
-        if (!this.isProcessed(clazz)) {
-            return;
-        }
-
+    public <T> Set<Processor<T>> getProcessors(Class<? extends T> clazz) {
         List<Class<? extends T>> keyClasses = ReflectionUtil.unsafeCast(this.findProcessorKey(clazz));
 
-        for (Class<? extends T> keyClass : keyClasses) {
-            Set<Processor<T>> processors = ReflectionUtil.unsafeCast(this.processorRegistry.get(keyClass));
+        Set<Processor<T>> processors = new HashSet<>();
 
-            processors.forEach(processor -> processor.process(instance));
+        for (Class<? extends T> keyClass : keyClasses) {
+            Set<Processor<?>> classProcessor = this.processorRegistry.get(keyClass)
+                    .stream()
+                    .filter(processor -> this.isValidProcessor(processor, clazz))
+                    .collect(Collectors.toSet());
+
+            processors.addAll(ReflectionUtil.unsafeCast(classProcessor));
         }
+
+        return processors;
+    }
+
+    private <T> boolean isValidProcessor(Processor<?> processor, Class<? extends T> clazz) {
+        if (processor instanceof AnnotedProcessor<?, ?> annotedProcessor) {
+            return clazz.isAnnotationPresent(annotedProcessor.getAnnotationType());
+        }
+        return true;
     }
 }

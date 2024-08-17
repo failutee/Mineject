@@ -3,6 +3,7 @@ package xyz.failutee.mineject.event;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.exception.DependencyException;
+import xyz.failutee.mineject.subscribe.Subscribe;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
@@ -27,43 +28,50 @@ public class EventDispatcherImpl implements EventDispatcher {
         List<Method> methods = this.registry.getMethodsByEvent(event);
 
         for (Method method : methods) {
-            if (!this.isValidEventMethod(method, event)) {
-                continue;
+            if (event instanceof CancellableEvent cancellableEvent && cancellableEvent.isCancelled()) {
+                break;
             }
-
             this.invokeEventMethod(method, event);
         }
 
         return event;
     }
 
-    private boolean isValidEventMethod(Method method, Event event) {
-        return method.getParameterTypes()[0] == event.getClass();
-    }
-
     private void invokeEventMethod(Method method, Event event) {
         Class<?> declaringClass = method.getDeclaringClass();
-        Object instance = null;
 
-        if (!Modifier.isStatic(method.getModifiers())) {
-            instance = this.getDependencyInstance(declaringClass);
-        }
+        Object instance = Modifier.isStatic(method.getModifiers()) ? null : this.getDependencyInstance(declaringClass);
 
-        Object[] arguments = this.dependencyResolver.resolveArguments(method, 1);
-        arguments[0] = event;
+        Object[] arguments = this.resolveEventMethodArguments(method, event);
 
         try {
             ReflectionUtil.invokeMethod(instance, method, arguments);
-        } catch (Exception exception) {
-            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()));
         }
+        catch (Exception exception) {
+            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()), exception);
+        }
+    }
+
+    private Object[] resolveEventMethodArguments(Method method, Event event) {
+        Subscribe subscribe = method.getAnnotation(Subscribe.class);
+
+        Class<?>[] parameters = method.getParameterTypes();
+
+        if (parameters.length > 0 && parameters[0] == subscribe.value()) {
+            Object[] arguments = this.dependencyResolver.resolveArguments(method, 1);
+            arguments[0] = event;
+
+            return arguments;
+        }
+
+        return this.dependencyResolver.resolveArguments(method);
     }
 
     private <T> T getDependencyInstance(Class<? extends T> declaringClass) {
         try {
             return this.dependencyProvider.getDependency(declaringClass);
         } catch (DependencyException exception) {
-            return this.dependencyResolver.createInstance(declaringClass);
+            return this.dependencyProvider.getOrCreate(declaringClass);
         }
     }
 }

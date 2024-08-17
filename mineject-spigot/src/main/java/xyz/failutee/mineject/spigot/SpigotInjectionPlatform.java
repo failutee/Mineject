@@ -33,12 +33,11 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
         .onProcess(Task.class, ScheduledTask.class, (task, object) -> {
             Class<?> clazz = object.getClass();
 
-            if (!BukkitTask.class.isAssignableFrom(clazz)) {
+            try {
+                this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object), task.delay(), task.repeat(), task.async());
+            } catch (ClassCastException exception) {
                 throw new DependencyException("Class '%s' does not implement ScheduledTask<BukkitTask>".formatted(clazz.getSimpleName()));
             }
-
-            this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object),
-                    task.delay(), task.repeat(), task.async());
         });
     }
 }

@@ -1,23 +1,21 @@
 package xyz.failutee.mineject.dependency;
 
-import xyz.failutee.mineject.bean.BeanManager;
-import xyz.failutee.mineject.bean.BeanSetupRegistry;
+import xyz.failutee.mineject.bean.Bean;
+import xyz.failutee.mineject.bean.BeanService;
 import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Parameter;
+import java.util.Optional;
 
 public class DependencyResolverImpl implements DependencyResolver {
 
-    private final BeanSetupRegistry beanSetupRegistry;
-    private final DependencyProvider dependencyProvider;
+    private final BeanService beanService;
 
-    public DependencyResolverImpl(
-        BeanSetupRegistry beanSetupRegistry,
-        DependencyProvider dependencyProvider
-    ) {
-        this.beanSetupRegistry = beanSetupRegistry;
-        this.dependencyProvider = dependencyProvider;
+    public DependencyResolverImpl(BeanService beanService) {
+        this.beanService = beanService;
     }
 
     @Override
@@ -31,7 +29,7 @@ public class DependencyResolverImpl implements DependencyResolver {
         try {
             return ReflectionUtil.createNewInstance(constructor, args);
         } catch (Exception exception) {
-            throw new DependencyException("There was a problem while creating an instance of the '%s' class.".formatted(clazz.getSimpleName()));
+            throw new DependencyException("There was a problem while creating an instance of the '%s' class.".formatted(clazz.getSimpleName()), exception);
         }
     }
 
@@ -44,7 +42,8 @@ public class DependencyResolverImpl implements DependencyResolver {
 
             Class<?> type = parameters[i].getType();
 
-            args[i] = this.getOrCreateBean(type);
+            args[i] = this.getOrInitialize(type);
+
         }
 
         return args;
@@ -56,17 +55,19 @@ public class DependencyResolverImpl implements DependencyResolver {
     }
 
     @Override
-    public <T> Object getOrCreateBean(Class<? extends T> clazz) {
-        return this.beanSetupRegistry.searchBeanInstance(clazz).orElseGet(() -> {
-            try {
-                return this.dependencyProvider.getDependency(clazz);
-            } catch (DependencyException exception) {
-                Object instance = this.createInstance(clazz);
+    public <T> T getOrInitialize(Class<? extends T> beanClass) {
+        Optional<Bean<T>> optionalBean = this.beanService.getBean(beanClass);
 
-                this.beanSetupRegistry.registerBeanType(instance);
+        if (optionalBean.isPresent()) {
+            Bean<T> bean = optionalBean.get();
 
-                return instance;
+            if (!bean.isInitialized()) {
+                bean.handleBean(this);
             }
-        });
+
+            return bean.getInstance();
+        }
+
+        throw new RuntimeException("Bean '%s' not found, did you forgot to provide it?".formatted(beanClass.getSimpleName()));
     }
 }
