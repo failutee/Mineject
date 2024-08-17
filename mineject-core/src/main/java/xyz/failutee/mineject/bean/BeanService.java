@@ -1,6 +1,5 @@
 package xyz.failutee.mineject.bean;
 
-
 import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.bean.impl.MethodBean;
 import xyz.failutee.mineject.bean.impl.ProcessedBean;
@@ -55,15 +54,19 @@ public class BeanService {
         for (Class<?> clazz : classes) {
 
             if (this.beanProcessor.isProcessed(clazz)) {
-                this.registerBean(clazz, new ProcessedBean<>(this.beanProcessor.getProcessors(clazz)));
+                var processors = this.beanProcessor.getProcessors(clazz);
+
+                if (!processors.isEmpty()) {
+                    this.registerBean(clazz, new ProcessedBean<>(clazz, ReflectionUtil.unsafeCast(processors)));
+                }
             }
 
             if (AnnotationUtil.isComponent(clazz)) {
-                this.registerBean(clazz, new ComponentBean<>());
+                this.registerBean(clazz, new ComponentBean<>(clazz));
             }
 
             if (AnnotationUtil.isBeanSetup(clazz)) {
-                this.registerBean(clazz, new ComponentBean<>());
+                this.registerBean(clazz, new ComponentBean<>(clazz));
 
                 for (Method method : clazz.getDeclaredMethods()) {
 
@@ -71,7 +74,7 @@ public class BeanService {
                         continue;
                     }
 
-                    this.registerBean(method.getReturnType(), new MethodBean<>(method));
+                    this.registerBean(method.getReturnType(), new MethodBean<>(clazz, method));
 
                 }
             }

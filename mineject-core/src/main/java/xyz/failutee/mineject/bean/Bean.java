@@ -4,12 +4,14 @@ import xyz.failutee.mineject.dependency.DependencyResolver;
 
 public interface Bean<T> {
 
+    Class<? extends T> getBeanClass();
+
     void initializeBean(T instance);
 
     boolean isInitialized();
 
     T getInstance();
 
-    void handleBean(Class<? extends T> beanClass, DependencyResolver dependencyResolver);
+    void handleBean(DependencyResolver dependencyResolver);
 
 }

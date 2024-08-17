@@ -48,7 +48,7 @@ public class EventDispatcherImpl implements EventDispatcher {
             ReflectionUtil.invokeMethod(instance, method, arguments);
         }
         catch (Exception exception) {
-            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()));
+            throw new DependencyException("There was a problem calling the event function '%s:%s' - '%s'".formatted(method.getDeclaringClass().getSimpleName(), method.getName(), event.getClass().getSimpleName()), exception);
         }
     }
 

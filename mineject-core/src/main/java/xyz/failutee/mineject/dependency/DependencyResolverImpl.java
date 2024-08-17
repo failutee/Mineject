@@ -62,7 +62,7 @@ public class DependencyResolverImpl implements DependencyResolver {
             Bean<T> bean = optionalBean.get();
 
             if (!bean.isInitialized()) {
-                bean.handleBean(beanClass, this);
+                bean.handleBean(this);
             }
 
             return bean.getInstance();

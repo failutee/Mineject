@@ -5,9 +5,13 @@ import xyz.failutee.mineject.dependency.DependencyResolver;
 
 public class ComponentBean<T> extends AbstractBean<T> {
 
+    public ComponentBean(Class<? extends T> beanClass) {
+        super(beanClass);
+    }
+
     @Override
-    public void handleBean(Class<? extends T> beanClass, DependencyResolver dependencyResolver) {
-        T instance = dependencyResolver.createInstance(beanClass);
+    public void handleBean(DependencyResolver dependencyResolver) {
+        T instance = dependencyResolver.createInstance(this.getBeanClass());
         this.initializeBean(instance);
     }
 }

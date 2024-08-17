@@ -8,6 +8,7 @@ import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeanProcessor {
 
@@ -44,10 +45,21 @@ public class BeanProcessor {
         Set<Processor<T>> processors = new HashSet<>();
 
         for (Class<? extends T> keyClass : keyClasses) {
-            var classProcessor = this.processorRegistry.get(keyClass);
+            Set<Processor<?>> classProcessor = this.processorRegistry.get(keyClass)
+                    .stream()
+                    .filter(processor -> this.isValidProcessor(processor, clazz))
+                    .collect(Collectors.toSet());
+
             processors.addAll(ReflectionUtil.unsafeCast(classProcessor));
         }
 
         return processors;
+    }
+
+    private <T> boolean isValidProcessor(Processor<?> processor, Class<? extends T> clazz) {
+        if (processor instanceof AnnotedProcessor<?, ?> annotedProcessor) {
+            return clazz.isAnnotationPresent(annotedProcessor.getAnnotationType());
+        }
+        return true;
     }
 }

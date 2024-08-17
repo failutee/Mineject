@@ -12,12 +12,13 @@ public class MethodBean<T> extends AbstractBean<T> {
 
     private final Method beanMethod;
 
-    public MethodBean(Method beanMethod) {
+    public MethodBean(Class<? extends T> beanClass, Method beanMethod) {
+        super(beanClass);
         this.beanMethod = beanMethod;
     }
 
     @Override
-    public void handleBean(Class<? extends T> beanClass, DependencyResolver dependencyResolver) {
+    public void handleBean(DependencyResolver dependencyResolver) {
         Class<?> declaringClass = this.beanMethod.getDeclaringClass();
 
         Object[] args = dependencyResolver.resolveArguments(this.beanMethod);

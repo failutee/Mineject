@@ -4,6 +4,7 @@ import xyz.failutee.mineject.bean.Bean;
 import xyz.failutee.mineject.bean.BeanService;
 import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.exception.DependencyException;
+import xyz.failutee.mineject.util.ReflectionUtil;
 
 import java.util.Optional;
 import java.util.Set;
@@ -57,9 +58,11 @@ public class DependencyProviderImpl implements DependencyProvider {
 
     @Override
     public <T> void registerDependency(Class<? extends T> tClass, T instance) {
-        var bean = new ComponentBean<>();
-        bean.initializeBean(instance);
+        this.beanService.getBean(tClass).ifPresentOrElse(bean -> bean.initializeBean(ReflectionUtil.unsafeCast(instance)), () -> {
+            var bean = new ComponentBean<>(ReflectionUtil.unsafeCast(tClass));
+            bean.initializeBean(instance);
 
-        this.beanService.registerBean(tClass, bean);
+            this.beanService.registerBean(tClass, bean);
+        });
     }
 }

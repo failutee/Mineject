@@ -5,6 +5,7 @@ import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.event.EventDispatcher;
 import xyz.failutee.mineject.event.EventDispatcherProvider;
+import xyz.failutee.mineject.event.impl.MinejectPreInitializeEvent;
 import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
 import xyz.failutee.mineject.platform.InjectionPlatform;
@@ -13,7 +14,7 @@ import xyz.failutee.mineject.settings.DependencySettings;
 import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
 
-import java.util.Set;
+import java.util.List;
 
 public class Mineject implements DependencyInjector, EventDispatcherProvider {
 
@@ -61,7 +62,7 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
         String packageName = this.dependencySettings.getPackageName();
         ClassLoader classLoader = this.getClass().getClassLoader();
 
-        Set<Class<?>> classes = ClassScannerUtil.scanClasses(packageName, classLoader);
+        List<Class<?>> classes = ClassScannerUtil.scanClasses(packageName, classLoader);
 
         InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyContext);
 
@@ -71,6 +72,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
 
         this.subscriberRegistry.collectSubscribedMethods(classes);
         this.beanService.collectBeans(classes);
+
+        this.eventDispatcher.dispatchEvent(new MinejectPreInitializeEvent());
 
         this.beanService.getBeans().forEach(beanHolder -> {
             Class<?> beanClass = beanHolder.beanClass();
