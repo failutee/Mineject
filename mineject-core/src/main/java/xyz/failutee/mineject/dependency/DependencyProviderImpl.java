@@ -43,14 +43,14 @@ public class DependencyProviderImpl implements DependencyProvider {
     }
 
     @Override
-    public <T> T getOrCreate(Class<T> tClass) {
+    public <T> T getOrCreate(Class<T> beanClass) {
         try {
-            return this.getDependency(tClass);
+            return this.getDependency(beanClass);
         }
         catch (DependencyException exception) {
-            T instance = this.dependencyResolver.createInstance(tClass);
+            T instance = this.dependencyResolver.createInstance(beanClass);
 
-            this.registerDependency(tClass, instance);
+            this.registerDependency(beanClass, instance);
 
             return instance;
         }
