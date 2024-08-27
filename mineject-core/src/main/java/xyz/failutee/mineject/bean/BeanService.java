@@ -49,34 +49,41 @@ public class BeanService {
                 .collect(Collectors.toSet());
     }
 
-    // TODO: Handle multiple bean types
     public void collectBeans(Collection<Class<?>> classes) {
         for (Class<?> clazz : classes) {
 
-            if (this.beanProcessor.isProcessed(clazz)) {
-                var processors = this.beanProcessor.getProcessors(clazz);
-
-                if (!processors.isEmpty()) {
-                    this.registerBean(clazz, new ProcessedBean<>(clazz, ReflectionUtil.unsafeCast(processors)));
-                }
+            for (Class<?> innerClass : clazz.getDeclaredClasses()) {
+                this.handleBeanClass(innerClass);
             }
 
-            if (AnnotationUtil.isComponent(clazz)) {
-                this.registerBean(clazz, new ComponentBean<>(clazz));
+            this.handleBeanClass(clazz);
+        }
+    }
+
+    private void handleBeanClass(Class<?> clazz) {
+        if (this.beanProcessor.isProcessed(clazz)) {
+            var processors = this.beanProcessor.getProcessors(clazz);
+
+            if (!processors.isEmpty()) {
+                this.registerBean(clazz, new ProcessedBean<>(clazz, ReflectionUtil.unsafeCast(processors)));
             }
+        }
 
-            if (AnnotationUtil.isBeanSetup(clazz)) {
-                this.registerBean(clazz, new ComponentBean<>(clazz));
+        if (AnnotationUtil.isComponent(clazz)) {
+            this.registerBean(clazz, new ComponentBean<>(clazz));
+        }
 
-                for (Method method : clazz.getDeclaredMethods()) {
+        if (AnnotationUtil.isBeanSetup(clazz)) {
+            this.registerBean(clazz, new ComponentBean<>(clazz));
 
-                    if (!AnnotationUtil.isMethodBean(method)) {
-                        continue;
-                    }
+            for (Method method : clazz.getDeclaredMethods()) {
 
-                    this.registerBean(method.getReturnType(), new MethodBean<>(clazz, method));
-
+                if (!AnnotationUtil.isMethodBean(method)) {
+                    continue;
                 }
+
+                this.registerBean(method.getReturnType(), new MethodBean<>(clazz, method));
+
             }
         }
     }
