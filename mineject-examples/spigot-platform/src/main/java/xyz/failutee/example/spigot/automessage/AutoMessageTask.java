@@ -11,7 +11,7 @@ import xyz.failutee.mineject.spigot.annotation.Task;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Task(delay = 0, period = 1, unit = TimeUnit.MINUTES)
+@Task(delay = 0, period = 5, unit = TimeUnit.SECONDS)
 public class AutoMessageTask implements ScheduledTask<BukkitTask> {
 
     private int messageIndex = 0;
