@@ -5,4 +5,7 @@ rootProject.name = "Mineject"
 include("mineject-core")
 include("mineject-spigot")
 include("mineject-commons")
-include("mineject-example")
+include("mineject-examples")
+include("spigot-platform")
+include("mineject-examples:spigot-platform")
+findProject(":mineject-examples:spigot-platform")?.name = "spigot-platform"

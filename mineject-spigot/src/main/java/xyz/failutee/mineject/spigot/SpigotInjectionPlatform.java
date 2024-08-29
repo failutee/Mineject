@@ -10,9 +10,13 @@ import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.processor.ProcessorConfigurer;
+import xyz.failutee.mineject.spigot.annotation.Controller;
 import xyz.failutee.mineject.spigot.annotation.Task;
 import xyz.failutee.mineject.spigot.task.BukkitTaskService;
 import xyz.failutee.mineject.util.ReflectionUtil;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public final class SpigotInjectionPlatform implements InjectionPlatform {
 
@@ -26,18 +30,29 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
 
     @Override
     public ProcessorConfigurer getProcessorConfigurer() {
-        return beanProcessor -> beanProcessor.onProcess(Listener.class, (listener) -> {
+        return beanProcessor -> beanProcessor.onProcess(Controller.class, Listener.class, (controller, listener) -> {
             PluginManager pluginManager = this.plugin.getServer().getPluginManager();
             pluginManager.registerEvents(listener, this.plugin);
         })
         .onProcess(Task.class, ScheduledTask.class, (task, object) -> {
             Class<?> clazz = object.getClass();
 
+            Duration delayDuration = this.toDuration(task.delay(), task.unit());
+            Duration repeatDuration = this.toDuration(task.period(), task.unit());
+
             try {
-                this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object), task.delay(), task.repeat(), task.async());
+                this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object), this.toTicks(delayDuration), this.toTicks(repeatDuration), task.async());
             } catch (ClassCastException exception) {
                 throw new DependencyException("Class '%s' does not implement ScheduledTask<BukkitTask>".formatted(clazz.getSimpleName()));
             }
         });
+    }
+
+    private Duration toDuration(long time, TimeUnit unit) {
+        return Duration.ofMillis(unit.toMillis(time));
+    }
+
+    private long toTicks(Duration duration) {
+        return duration.toMillis() / 50;
     }
 }
