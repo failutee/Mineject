@@ -17,7 +17,7 @@
 > Since the project is in its early stages of development, documentation and functionalities will be added progressively.
 
 > [!TIP]
-> If you encounter any issues, feel free to create an [issue](https://github.com/failutee/Mineject/issues) on GitHub or join to my [discord](https://discord.gg/ctY3D5EjAA).
+> If you encounter any issues, feel free to create an [issue](https://github.com/failutee/Mineject/issues) on GitHub or join to my [discord](https://discord.gg/ktJr9mXSFJ).
 
 <hr />
 
