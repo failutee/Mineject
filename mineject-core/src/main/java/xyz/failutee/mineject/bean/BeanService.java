@@ -24,23 +24,6 @@ public class BeanService {
         this.beans.put(beanClass, bean);
     }
 
-    public <T> Optional<Bean<T>> getBean(Class<? extends T> beanClass) {
-        if (this.beans.containsKey(beanClass)) {
-            Bean<T> bean = ReflectionUtil.unsafeCast(this.beans.get(beanClass));
-            return Optional.ofNullable(bean);
-        }
-
-        Set<Bean<T>> collectedBeans = this.collectBeans(beanClass);
-
-        if (collectedBeans.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Bean<T> bean = collectedBeans.iterator().next();
-
-        return Optional.of(bean);
-    }
-
     public <T> Set<Bean<T>> collectBeans(Class<? extends T> beanClass) {
         return this.beans.entrySet().stream()
                 .map(BeanHolder::fromEntry)
@@ -95,7 +78,7 @@ public class BeanService {
                 .collect(Collectors.toList());
     }
 
-    public record BeanHolder<T>(Class<? extends T> beanClass, Bean<T> bean) {
+    public record BeanHolder<T>(Class<? extends T> beanClass, Bean<?> bean) {
 
         public static <T> BeanHolder<T> fromEntry(Map.Entry<Class<?>, Bean<?>> entry) {
             return new BeanHolder<>(

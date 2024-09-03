@@ -8,7 +8,7 @@ import xyz.failutee.mineject.util.ReflectionUtil;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
-import java.util.Optional;
+import java.util.Set;
 
 public class DependencyResolverImpl implements DependencyResolver {
 
@@ -56,18 +56,18 @@ public class DependencyResolverImpl implements DependencyResolver {
 
     @Override
     public <T> T getOrInitialize(Class<? extends T> beanClass) {
-        Optional<Bean<T>> optionalBean = this.beanService.getBean(beanClass);
+        Set<Bean<T>> beans = this.beanService.collectBeans(beanClass);
 
-        if (optionalBean.isPresent()) {
-            Bean<T> bean = optionalBean.get();
+        if (beans.isEmpty()) {
+            throw new RuntimeException("Bean '%s' not found, did you forgot to provide it?".formatted(beanClass.getSimpleName()));
+        }
 
+        for (Bean<T> bean : beans) {
             if (!bean.isInitialized()) {
                 bean.handleBean(this);
             }
-
-            return bean.getInstance();
         }
 
-        throw new RuntimeException("Bean '%s' not found, did you forgot to provide it?".formatted(beanClass.getSimpleName()));
+        return beans.iterator().next().getInstance();
     }
 }

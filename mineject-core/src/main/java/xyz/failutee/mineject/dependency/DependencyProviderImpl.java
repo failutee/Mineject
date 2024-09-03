@@ -6,8 +6,8 @@ import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.exception.DependencyException;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DependencyProviderImpl implements DependencyProvider {
 
@@ -22,24 +22,26 @@ public class DependencyProviderImpl implements DependencyProvider {
     @Override
     public <T> T getDependency(Class<T> beanClass) {
         Set<T> dependencies = this.getDependencies(beanClass);
+
         return dependencies.iterator().next();
     }
 
     @Override
     public <T> Set<T> getDependencies(Class<T> beanClass) {
-        Optional<Bean<T>> optionalBean = this.beanService.getBean(beanClass);
+        Set<Bean<T>> beans = this.beanService.collectBeans(beanClass);
 
-        if (optionalBean.isEmpty()) {
-            throw new DependencyException("Dependency not found for '%s' class".formatted(beanClass.getSimpleName()));
+        if (beans.isEmpty()) {
+            throw new DependencyException("Dependency not found for '%s' class.".formatted(beanClass.getSimpleName()));
         }
 
-        Bean<T> bean = optionalBean.get();
-
-        if (!bean.isInitialized()) {
-            throw new DependencyException("Bean '%s' is not initialized".formatted(beanClass.getSimpleName()));
+        for (Bean<T> bean : beans) {
+            if (bean.isInitialized()) {
+                continue;
+            }
+            throw new DependencyException("Bean '%s' has not been initialized but you're trying to get it.".formatted(bean.getBeanClass().getSimpleName()));
         }
 
-        return Set.of(bean.getInstance());
+        return beans.stream().map(Bean::getInstance).collect(Collectors.toSet());
     }
 
     @Override
@@ -58,11 +60,9 @@ public class DependencyProviderImpl implements DependencyProvider {
 
     @Override
     public <T> void registerDependency(Class<? extends T> tClass, T instance) {
-        this.beanService.getBean(tClass).ifPresentOrElse(bean -> bean.initializeBean(ReflectionUtil.unsafeCast(instance)), () -> {
-            var bean = new ComponentBean<>(ReflectionUtil.unsafeCast(tClass));
-            bean.initializeBean(instance);
+        var bean = new ComponentBean<>(ReflectionUtil.unsafeCast(tClass));
+        bean.initializeBean(instance);
 
-            this.beanService.registerBean(tClass, bean);
-        });
+        this.beanService.registerBean(tClass, bean);
     }
 }

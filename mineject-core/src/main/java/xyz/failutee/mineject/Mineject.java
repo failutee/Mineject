@@ -15,6 +15,7 @@ import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
 
 import java.util.List;
+import java.util.Set;
 
 public class Mineject implements DependencyInjector, EventDispatcherProvider {
 
