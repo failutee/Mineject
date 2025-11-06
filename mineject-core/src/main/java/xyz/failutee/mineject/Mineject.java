@@ -34,15 +34,16 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider, Mi
     private final BeanService beanService;
 
     protected Mineject(
-            DependencySettings dependencySettings,
-            SubscriberRegistry subscriberRegistry,
-            DependencyResolver dependencyResolver,
-            DependencyProvider dependencyProvider,
-            InjectionPlatformProvider platformProvider,
-            DependencyContext dependencyContext,
-            EventDispatcher eventDispatcher,
-            BeanProcessor beanProcessor,
-            BeanService beanService) {
+        DependencySettings dependencySettings,
+        SubscriberRegistry subscriberRegistry,
+        DependencyResolver dependencyResolver,
+        DependencyProvider dependencyProvider,
+        InjectionPlatformProvider platformProvider,
+        DependencyContext dependencyContext,
+        EventDispatcher eventDispatcher,
+        BeanProcessor beanProcessor,
+        BeanService beanService
+    ) {
         this.dependencySettings = dependencySettings;
         this.subscriberRegistry = subscriberRegistry;
         this.dependencyResolver = dependencyResolver;

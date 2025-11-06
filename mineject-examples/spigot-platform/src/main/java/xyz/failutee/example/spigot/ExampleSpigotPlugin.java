@@ -17,7 +17,7 @@ public class ExampleSpigotPlugin extends JavaPlugin {
     public void onEnable() {
         this.mineject = MinejectFactory.create()
                 .platformProvider(SpigotInjectionPlatform::new)
-                .dependencySettings((settings, _) -> {
+                .dependencySettings((settings, ctx) -> {
                     settings.packageName("xyz.failutee.example.spigot");
                     settings.processorConfigurer(new ExamplePluginProcessorConfigurer());
                 })
