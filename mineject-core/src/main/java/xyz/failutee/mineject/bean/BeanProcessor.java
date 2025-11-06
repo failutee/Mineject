@@ -1,5 +1,6 @@
 package xyz.failutee.mineject.bean;
 
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 import xyz.failutee.mineject.processor.AnnotedProcessor;
 import xyz.failutee.mineject.processor.AnnotedProcessorFunction;
 import xyz.failutee.mineject.processor.Processor;
@@ -10,7 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BeanProcessor {
+public class BeanProcessor implements Cleanupable {
 
     private final Map<Class<?>, Set<Processor<?>>> processorRegistry = new HashMap<>();
 
@@ -61,5 +62,13 @@ public class BeanProcessor {
             return clazz.isAnnotationPresent(annotedProcessor.getAnnotationType());
         }
         return true;
+    }
+
+    @Override
+    public void cleanup() {
+        for (Set<Processor<?>> processors : this.processorRegistry.values()) {
+            processors.clear();
+        }
+        this.processorRegistry.clear();
     }
 }

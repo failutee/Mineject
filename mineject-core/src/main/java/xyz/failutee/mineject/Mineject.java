@@ -8,6 +8,8 @@ import xyz.failutee.mineject.event.EventDispatcherProvider;
 import xyz.failutee.mineject.event.impl.MinejectPreInitializeEvent;
 import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
+import xyz.failutee.mineject.lifecycle.MinejectLifecycle;
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.platform.InjectionPlatformProvider;
 import xyz.failutee.mineject.settings.DependencySettings;
@@ -15,11 +17,11 @@ import xyz.failutee.mineject.subscribe.SubscriberRegistry;
 import xyz.failutee.mineject.util.ClassScannerUtil;
 
 import java.util.List;
-import java.util.Set;
 
-public class Mineject implements DependencyInjector, EventDispatcherProvider {
+public class Mineject implements DependencyInjector, EventDispatcherProvider, MinejectLifecycle {
 
     private boolean isInitialized = false;
+    private boolean isShutdown = false;
 
     private final DependencySettings dependencySettings;
     private final SubscriberRegistry subscriberRegistry;
@@ -57,8 +59,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
     public void runDependencyInjector() {
         if (this.isInitialized) {
             throw new RuntimeException("This function can only be executed once per instance.");
-        }
-        else this.isInitialized = true;
+        } else
+            this.isInitialized = true;
 
         String packageName = this.dependencySettings.getPackageName();
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -96,5 +98,29 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider {
     @Override
     public EventDispatcher getEventDispatcher() {
         return this.eventDispatcher;
+    }
+
+    @Override
+    public void shutdown() {
+        if (this.isShutdown) {
+            return;
+        }
+
+        this.isShutdown = true;
+
+        this.subscriberRegistry.cleanup();
+        this.beanService.cleanup();
+        this.beanProcessor.cleanup();
+
+        InjectionPlatform platform = this.platformProvider.getPlatform(this.dependencyContext);
+
+        if (platform instanceof Cleanupable cleanupablePlatform) {
+            cleanupablePlatform.cleanup();
+        }
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return this.isShutdown;
     }
 }

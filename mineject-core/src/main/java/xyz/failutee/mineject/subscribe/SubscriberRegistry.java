@@ -1,11 +1,12 @@
 package xyz.failutee.mineject.subscribe;
 
 import xyz.failutee.mineject.event.Event;
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class SubscriberRegistry {
+public class SubscriberRegistry implements Cleanupable {
 
     private final Map<Class<? extends Event>, List<Method>> eventsMethods = new HashMap<>();
 
@@ -36,5 +37,13 @@ public class SubscriberRegistry {
 
     public List<Method> getMethodsByEvent(Event event) {
         return this.eventsMethods.getOrDefault(event.getClass(), new ArrayList<>());
+    }
+
+    @Override
+    public void cleanup() {
+        for (List<Method> methods : this.eventsMethods.values()) {
+            methods.clear();
+        }
+        this.eventsMethods.clear();
     }
 }

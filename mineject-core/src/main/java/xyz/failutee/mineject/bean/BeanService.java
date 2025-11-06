@@ -3,6 +3,7 @@ package xyz.failutee.mineject.bean;
 import xyz.failutee.mineject.bean.impl.ComponentBean;
 import xyz.failutee.mineject.bean.impl.MethodBean;
 import xyz.failutee.mineject.bean.impl.ProcessedBean;
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 import xyz.failutee.mineject.util.AnnotationUtil;
 import xyz.failutee.mineject.util.ReflectionUtil;
 
@@ -10,7 +11,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BeanService {
+public class BeanService implements Cleanupable {
 
     private final Map<Class<?>, Bean<?>> beans = new HashMap<>();
 
@@ -78,13 +79,24 @@ public class BeanService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void cleanup() {
+        for (Bean<?> bean : this.beans.values()) {
+            if (bean instanceof Cleanupable cleanupableBean) {
+                cleanupableBean.cleanup();
+            }
+        }
+
+        this.beans.clear();
+        this.beanProcessor.cleanup();
+    }
+
     public record BeanHolder<T>(Class<? extends T> beanClass, Bean<?> bean) {
 
         public static <T> BeanHolder<T> fromEntry(Map.Entry<Class<?>, Bean<?>> entry) {
             return new BeanHolder<>(
-              ReflectionUtil.unsafeCast(entry.getKey()),
-              ReflectionUtil.unsafeCast(entry.getValue())
-            );
+                    ReflectionUtil.unsafeCast(entry.getKey()),
+                    ReflectionUtil.unsafeCast(entry.getValue()));
         }
     }
 }

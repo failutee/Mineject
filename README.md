@@ -14,10 +14,10 @@
 <br>
 
 > [!IMPORTANT]  
-> Since the project is in its early stages of development, documentation and functionalities will be added progressively.
+> The GitBook documentation is outdated. Please refer to the examples in mineject-examples instead.
 
 > [!TIP]
-> If you encounter any issues, feel free to create an [issue](https://github.com/failutee/Mineject/issues) on GitHub or join to my [discord](https://discord.gg/ktJr9mXSFJ).
+> If you encounter any issues, feel free to create an [issue](https://github.com/failutee/Mineject/issues) on GitHub.
 
 <hr />
 

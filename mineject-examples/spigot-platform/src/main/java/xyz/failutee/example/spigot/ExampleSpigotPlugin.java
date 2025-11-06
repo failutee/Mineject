@@ -11,11 +11,13 @@ import xyz.failutee.mineject.spigot.SpigotInjectionPlatform;
 
 public class ExampleSpigotPlugin extends JavaPlugin {
 
+    private Mineject mineject;
+
     @Override
     public void onEnable() {
-        Mineject mineject = MinejectFactory.create()
+        this.mineject = MinejectFactory.create()
                 .platformProvider(SpigotInjectionPlatform::new)
-                .dependencySettings((settings, context) -> {
+                .dependencySettings((settings, ctx) -> {
                     settings.packageName("xyz.failutee.example.spigot");
                     settings.processorConfigurer(new ExamplePluginProcessorConfigurer());
                 })
@@ -23,8 +25,15 @@ public class ExampleSpigotPlugin extends JavaPlugin {
                 .withBean(Server.class, this.getServer())
                 .build();
 
-        EventDispatcher eventDispatcher = mineject.getEventDispatcher();
+        EventDispatcher eventDispatcher = this.mineject.getEventDispatcher();
 
         eventDispatcher.dispatchEvent(new ExamplePluginInitializationEvent());
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.mineject != null && !this.mineject.isShutdown()) {
+            this.mineject.shutdown();
+        }
     }
 }

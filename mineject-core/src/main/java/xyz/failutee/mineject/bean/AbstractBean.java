@@ -1,6 +1,8 @@
 package xyz.failutee.mineject.bean;
 
-public abstract class AbstractBean<T> implements Bean<T> {
+import xyz.failutee.mineject.lifecycle.Cleanupable;
+
+public abstract class AbstractBean<T> implements Bean<T>, Cleanupable {
 
     private final Class<? extends T> beanClass;
 
@@ -28,5 +30,10 @@ public abstract class AbstractBean<T> implements Bean<T> {
     @Override
     public Class<? extends T> getBeanClass() {
         return this.beanClass;
+    }
+
+    @Override
+    public void cleanup() {
+        this.instance = null;
     }
 }
