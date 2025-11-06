@@ -7,6 +7,7 @@ import org.bukkit.scheduler.BukkitTask;
 import xyz.failutee.mineject.commons.task.ScheduledTask;
 import xyz.failutee.mineject.commons.task.TaskService;
 import xyz.failutee.mineject.exception.DependencyException;
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 import xyz.failutee.mineject.platform.InjectionPlatform;
 import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.processor.ProcessorConfigurer;
@@ -18,7 +19,7 @@ import xyz.failutee.mineject.util.ReflectionUtil;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public final class SpigotInjectionPlatform implements InjectionPlatform {
+public final class SpigotInjectionPlatform implements InjectionPlatform, Cleanupable {
 
     private final Plugin plugin;
     private final TaskService<BukkitTask> scheduledTask;
@@ -34,18 +35,22 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
             PluginManager pluginManager = this.plugin.getServer().getPluginManager();
             pluginManager.registerEvents(listener, this.plugin);
         })
-        .onProcess(Task.class, ScheduledTask.class, (task, object) -> {
-            Class<?> clazz = object.getClass();
+                .onProcess(Task.class, ScheduledTask.class, (task, object) -> {
+                    Class<?> clazz = object.getClass();
 
-            Duration delayDuration = this.toDuration(task.delay(), task.unit());
-            Duration repeatDuration = this.toDuration(task.period(), task.unit());
+                    Duration delayDuration = this.toDuration(task.delay(), task.unit());
+                    Duration repeatDuration = this.toDuration(task.period(), task.unit());
 
-            try {
-                this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object), this.toTicks(delayDuration), this.toTicks(repeatDuration), task.async());
-            } catch (ClassCastException exception) {
-                throw new DependencyException("Class '%s' does not implement ScheduledTask<BukkitTask>".formatted(clazz.getSimpleName()));
-            }
-        });
+                    try {
+                        this.scheduledTask.runTaskTimer(ReflectionUtil.unsafeCast(object),
+                          this.toTicks(delayDuration),
+                          this.toTicks(repeatDuration),
+                          task.async()
+                        );
+                    } catch (ClassCastException exception) {
+                        throw new DependencyException("Class '%s' does not implement ScheduledTask<BukkitTask>".formatted(clazz.getSimpleName()));
+                    }
+                });
     }
 
     private Duration toDuration(long time, TimeUnit unit) {
@@ -54,5 +59,12 @@ public final class SpigotInjectionPlatform implements InjectionPlatform {
 
     private long toTicks(Duration duration) {
         return duration.toMillis() / 50;
+    }
+
+    @Override
+    public void cleanup() {
+        if (this.scheduledTask instanceof Cleanupable cleanupable) {
+            cleanupable.cleanup();
+        }
     }
 }

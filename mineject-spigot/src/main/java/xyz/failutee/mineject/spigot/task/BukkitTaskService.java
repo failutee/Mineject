@@ -5,8 +5,14 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.failutee.mineject.commons.task.ScheduledTask;
 import xyz.failutee.mineject.commons.task.TaskService;
+import xyz.failutee.mineject.lifecycle.Cleanupable;
 
-public class BukkitTaskService implements TaskService<BukkitTask> {
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class BukkitTaskService implements TaskService<BukkitTask>, Cleanupable {
+
+    private final Set<BukkitTask> activeTasks = ConcurrentHashMap.newKeySet();
 
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
@@ -19,8 +25,26 @@ public class BukkitTaskService implements TaskService<BukkitTask> {
     @Override
     public void runTaskTimer(ScheduledTask<BukkitTask> scheduledTask, long delay, long repeat, boolean async) {
         if (async) {
-            this.scheduler.runTaskTimerAsynchronously(this.plugin, scheduledTask::runTask, delay, repeat);
+            this.scheduler.runTaskTimerAsynchronously(this.plugin,
+                    (bukkitTask) -> this.executeAndTrackTask(scheduledTask, bukkitTask), delay, repeat);
+        } else {
+            this.scheduler.runTaskTimer(this.plugin,
+                    (bukkitTask) -> this.executeAndTrackTask(scheduledTask, bukkitTask), delay, repeat);
         }
-        this.scheduler.runTaskTimer(this.plugin, scheduledTask::runTask, delay, repeat);
+    }
+
+    private void executeAndTrackTask(ScheduledTask<BukkitTask> scheduledTask, BukkitTask bukkitTask) {
+        scheduledTask.runTask(bukkitTask);
+        this.activeTasks.add(bukkitTask);
+    }
+
+    @Override
+    public void cleanup() {
+        for (BukkitTask task : this.activeTasks) {
+            if (!task.isCancelled()) {
+                task.cancel();
+            }
+        }
+        this.activeTasks.clear();
     }
 }
