@@ -5,6 +5,7 @@ import xyz.failutee.mineject.dependency.DependencyContext;
 import xyz.failutee.mineject.dependency.DependencyResolver;
 import xyz.failutee.mineject.event.EventDispatcher;
 import xyz.failutee.mineject.event.EventDispatcherProvider;
+import xyz.failutee.mineject.event.impl.MinejectInitializeFinishEvent;
 import xyz.failutee.mineject.event.impl.MinejectPreInitializeEvent;
 import xyz.failutee.mineject.injector.DependencyInjector;
 import xyz.failutee.mineject.dependency.DependencyProvider;
@@ -88,6 +89,8 @@ public class Mineject implements DependencyInjector, EventDispatcherProvider, Mi
 
             this.dependencyResolver.getOrInitialize(beanClass);
         });
+
+        this.eventDispatcher.dispatchEvent(new MinejectInitializeFinishEvent());
     }
 
     @Override
